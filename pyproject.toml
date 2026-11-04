@@ -1,0 +1,8 @@
+[project]
+name = "incident-desk"
+version = "0.1.0"
+description = "A Django incident-management starter for an application-security course"
+requires-python = ">=3.12,<3.14"
+
+[tool.vercel]
+entrypoint = "config.wsgi:application"

@@ -1,0 +1,21 @@
+# Separate local-only environment. Never use for production or with real data.
+name: incident-desk-security-lab
+services:
+  app:
+    build:
+      context: .
+      dockerfile: exercises/sql-injection/Dockerfile
+    ports:
+      - "127.0.0.1:8001:8001"
+    networks: [training]
+  zap:
+    image: ghcr.io/zaproxy/zaproxy:stable
+    user: zap
+    command: zap-webswing.sh
+    ports:
+      - "127.0.0.1:8085:8080"
+      - "127.0.0.1:8095:8090"
+    networks: [training]
+networks:
+  training:
+    internal: true

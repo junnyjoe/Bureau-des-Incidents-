@@ -1,0 +1,19 @@
+name: incident-desk-local
+services:
+  db:
+    image: postgres:17-alpine@sha256:eee6c6e1b0894fa4fe0075eb054af9fd1cf39a35321c2d4110626cfe506411fb
+    environment:
+      POSTGRES_DB: incidentdesk
+      POSTGRES_USER: incidentdesk
+      POSTGRES_PASSWORD: local-course-only
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - incidentdesk-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U incidentdesk -d incidentdesk"]
+      interval: 3s
+      timeout: 3s
+      retries: 15
+volumes:
+  incidentdesk-data:

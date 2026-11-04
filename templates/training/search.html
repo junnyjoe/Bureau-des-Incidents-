@@ -1,0 +1,5 @@
+{% extends 'base.html' %}{% block title %}Local SQLi exercise · Incident Desk{% endblock %}
+{% block content %}<p class="eyebrow">LOCAL TRAINING MODE — SYNTHETIC DATA ONLY</p><h1>Incident search.</h1><p class="muted">This exercise intentionally contains a SQL injection flaw. Never deploy this mode.</p>
+<section class="card form-card"><form method="get"><label for="q">Search title</label><input name="q" id="q" maxlength="200" value="{{ query }}"><br><br><button class="button-primary">Search</button></form>
+{% if error %}<p class="form-alert" role="alert">{{ error }}</p>{% endif %}<h2>Search results</h2><p>{{ results|length }} result{{ results|length|pluralize }}</p>
+{% for result in results %}<article><h3>{{ result.title }}</h3><p>{{ result.description }}</p></article>{% empty %}<p>No matching incidents.</p>{% endfor %}</section>{% endblock %}

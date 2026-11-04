@@ -1,0 +1,1 @@
+{% extends 'base.html' %}{% block title %}404 · Incident Desk{% endblock %}{% block content %}<section class="card error-card"><p class="eyebrow">404</p><h1>Report not found</h1><p class="muted">This page is unavailable or is not part of your workspace.</p><a class="button-primary" href="{% url 'incidents:list' %}">Back to workspace →</a></section>{% endblock %}

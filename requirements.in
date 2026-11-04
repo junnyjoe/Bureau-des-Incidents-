@@ -1,0 +1,5 @@
+# Supported Django LTS, current patch at starter creation. Review before each cohort.
+Django==5.2.18
+dj-database-url>=3,<4
+python-dotenv>=1.2,<2
+psycopg[binary]>=3.2,<4
