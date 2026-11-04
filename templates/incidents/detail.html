@@ -1,30 +1,113 @@
 {% extends 'base.html' %}{% block title %}{{ incident.reference }} · Incident Desk{% endblock %}
 {% block content %}<a class="back-link" href="{% url 'incidents:list' %}">← My incidents</a><div class="detail-heading"><p class="eyebrow">{{ incident.reference }}</p><h1>{{ incident.title }}</h1></div>
-<div class="detail-layout"><article class="card detail-card"><h2>What happened</h2><div class="description-text">{{ incident.description }}</div>
-{% if can_update_status or can_assign %}
-<div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--line);">
-  <h2>Operational controls</h2>
-  {% if can_update_status %}
-  <form method="post" action="{% url 'incidents:update_status' incident.pk %}" style="margin-bottom: 24px;">
-    {% csrf_token %}
-    <label for="id_status">Update status</label>
-    <div style="display: flex; gap: 12px; align-items: center; max-width: 400px;">
-      {{ status_form.status }}
-      <button class="button-primary" type="submit" style="padding: 10px 16px;">Update</button>
-    </div>
-  </form>
+<div class="detail-layout">
+<article class="card detail-card">
+  <h2>What happened</h2>
+  <div class="description-text">{{ incident.description }}</div>
+
+  {% if can_update_status or can_assign %}
+  <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--line);">
+    <h2>Operational controls</h2>
+    {% if can_update_status %}
+    <form method="post" action="{% url 'incidents:update_status' incident.pk %}" style="margin-bottom: 24px;">
+      {% csrf_token %}
+      <label for="id_status">Update status</label>
+      <div style="display: flex; gap: 12px; align-items: center; max-width: 400px;">
+        {{ status_form.status }}
+        <button class="button-primary" type="submit" style="padding: 10px 16px;">Update</button>
+      </div>
+    </form>
+    {% endif %}
+    {% if can_assign %}
+    <form method="post" action="{% url 'incidents:assign' incident.pk %}">
+      {% csrf_token %}
+      <label for="id_assigned_to">Assign analyst (Admin)</label>
+      <div style="display: flex; gap: 12px; align-items: center; max-width: 400px;">
+        {{ assign_form.assigned_to }}
+        <button class="button-primary" type="submit" style="padding: 10px 16px;">Assign</button>
+      </div>
+    </form>
+    {% endif %}
+  </div>
   {% endif %}
-  {% if can_assign %}
-  <form method="post" action="{% url 'incidents:assign' incident.pk %}">
-    {% csrf_token %}
-    <label for="id_assigned_to">Assign analyst (Admin)</label>
-    <div style="display: flex; gap: 12px; align-items: center; max-width: 400px;">
-      {{ assign_form.assigned_to }}
-      <button class="button-primary" type="submit" style="padding: 10px 16px;">Assign</button>
+
+  <!-- Comments section (Anti-Stored XSS: plain text autoescaping) -->
+  <div style="margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--line);">
+    <h2>Operational notes & comments ({{ comments|length }})</h2>
+    {% if comments %}
+      <div style="margin-top: 18px; display: flex; flex-direction: column; gap: 18px;">
+        {% for comment in comments %}
+        <div style="background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; color: var(--muted);">
+            <strong style="color: var(--ink);">{{ comment.author.get_username }}</strong>
+            <span>{{ comment.created_at|date:'M j, Y H:i' }} UTC</span>
+          </div>
+          <!-- Autoescaped plain text rendering -->
+          <div style="font-size: 13px; line-height: 1.7; white-space: pre-wrap; word-break: break-word;">{{ comment.body }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="muted" style="font-size: 13px; margin: 15px 0;">No comments on this report yet.</p>
+    {% endif %}
+
+    <!-- Add comment form -->
+    <form method="post" action="{% url 'incidents:add_comment' incident.pk %}" style="margin-top: 24px;">
+      {% csrf_token %}
+      <label for="id_body">Add a plain-text note</label>
+      {{ comment_form.body }}
+      <p class="help-text" style="font-size: 11px; color: var(--muted); margin: 6px 0 14px;">{{ comment_form.body.help_text }}</p>
+      <button class="button-primary" type="submit" style="padding: 10px 18px;">Post comment</button>
+    </form>
+  </div>
+
+  <!-- Audit trail section (Admin and assigned analyst only) -->
+  {% if audit_events %}
+  <div style="margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--line);">
+    <h2>Security audit log</h2>
+    <div class="table-scroll" style="margin-top: 14px;">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Event</th>
+            <th scope="col">Actor</th>
+            <th scope="col">Details</th>
+            <th scope="col">Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ev in audit_events %}
+          <tr>
+            <td><span class="badge" style="background:#e8ece8; font-size:10px;">{{ ev.get_action_display }}</span></td>
+            <td style="font-size: 12px;">{{ ev.username_snapshot }}</td>
+            <td style="font-size: 12px; color: var(--muted); max-width: 300px; word-break: break-word;">{{ ev.details }}</td>
+            <td class="date-cell">{{ ev.created_at|date:'M j, H:i:s' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-  </form>
+  </div>
   {% endif %}
-</div>
-{% endif %}
 </article>
-<aside class="card metadata"><h2>Report details</h2><dl><dt>Reference</dt><dd class="reference">{{ incident.reference }}</dd><dt>Status</dt><dd><span class="badge badge-status badge-{{ incident.status }}">{{ incident.get_status_display }}</span></dd><dt>Severity</dt><dd><span class="badge badge-severity badge-{{ incident.severity }}">{{ incident.get_severity_display }}</span></dd><dt>Reported by</dt><dd>{{ incident.created_by.get_username }}</dd><dt>Assigned analyst</dt><dd>{% if incident.assigned_to %}{{ incident.assigned_to.get_username }}{% else %}<span class="muted">Unassigned</span>{% endif %}</dd><dt>Created</dt><dd>{{ incident.created_at|date:'M j, Y' }}<br><span class="muted">{{ incident.created_at|date:'H:i' }} UTC</span></dd></dl><p class="small muted">Role-based access enforced server-side.</p></aside></div>{% endblock %}
+
+<aside class="card metadata">
+  <h2>Report details</h2>
+  <dl>
+    <dt>Reference</dt>
+    <dd class="reference">{{ incident.reference }}</dd>
+    <dt>Status</dt>
+    <dd><span class="badge badge-status badge-{{ incident.status }}">{{ incident.get_status_display }}</span></dd>
+    <dt>Severity</dt>
+    <dd><span class="badge badge-severity badge-{{ incident.severity }}">{{ incident.get_severity_display }}</span></dd>
+    <dt>Reported by</dt>
+    <dd>{{ incident.created_by.get_username }}</dd>
+    <dt>Assigned analyst</dt>
+    <dd>{% if incident.assigned_to %}{{ incident.assigned_to.get_username }}{% else %}<span class="muted">Unassigned</span>{% endif %}</dd>
+    <dt>Created</dt>
+    <dd>{{ incident.created_at|date:'M j, Y' }}<br><span class="muted">{{ incident.created_at|date:'H:i' }} UTC</span></dd>
+  </dl>
+  <p class="small muted">Role-based access enforced server-side.</p>
+</aside>
+</div>
+{% endblock %}

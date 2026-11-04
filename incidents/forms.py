@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from .models import Incident
-from .permissions import ROLE_ANALYSTS, ROLE_ADMINISTRATORS
+from .models import Comment, Incident
+from .permissions import ROLE_ADMINISTRATORS, ROLE_ANALYSTS
 
 class IncidentForm(forms.ModelForm):
     class Meta:
@@ -67,3 +67,19 @@ class IncidentStatusUpdateForm(forms.Form):
                 f"Invalid transition from {self.incident.get_status_display()} to {dict(Incident.Status.choices).get(new_status, new_status)}."
             )
         return new_status
+
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        # Author and incident are bound server-side. Only body is accepted from user.
+        fields = ["body"]
+        widgets = {
+            "body": forms.Textarea(attrs={
+                "rows": 4,
+                "placeholder": "Add a plain-text operational comment... (HTML tags will remain unexecuted)",
+                "class": "form-control",
+            }),
+        }
+        help_texts = {
+            "body": "Plain text only (2–2,000 characters). Do not include credentials or personal data.",
+        }

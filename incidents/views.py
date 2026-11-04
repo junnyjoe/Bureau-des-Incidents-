@@ -6,8 +6,9 @@ from django.urls import reverse
 from django.views import View
 from django.views.generic import CreateView, DetailView, ListView
 
-from .forms import IncidentAssignForm, IncidentForm, IncidentStatusUpdateForm
-from .models import Incident
+from .audit import record_audit_event
+from .forms import CommentForm, IncidentAssignForm, IncidentForm, IncidentStatusUpdateForm
+from .models import AuditEvent, Incident
 from .permissions import (
     can_assign_analyst,
     can_update_incident_status,
@@ -51,6 +52,13 @@ class IncidentDetailView(OwnedIncidentsMixin, DetailView):
         can_update_status = can_update_incident_status(user, incident)
         context["can_assign"] = can_assign
         context["can_update_status"] = can_update_status
+        context["comment_form"] = CommentForm()
+        context["comments"] = incident.comments.select_related("author").all()
+
+        # Audit events are visible to administrators and assigned analysts
+        if is_administrator(user) or (is_analyst(user) and incident.assigned_to_id == user.pk):
+            context["audit_events"] = incident.audit_events.all()[:20]
+
         if can_assign:
             context["assign_form"] = IncidentAssignForm(initial={"assigned_to": incident.assigned_to})
         if can_update_status:
@@ -65,11 +73,39 @@ class IncidentCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.created_by = self.request.user
         response = super().form_valid(form)
+        record_audit_event(
+            action=AuditEvent.Action.INCIDENT_CREATED,
+            request=self.request,
+            incident=self.object,
+            details=f"Created incident with title: {self.object.title}",
+        )
         messages.success(self.request, "Your incident has been recorded.")
         return response
 
     def get_success_url(self):
         return reverse("incidents:detail", kwargs={"pk": self.object.pk})
+
+class IncidentCommentCreateView(LoginRequiredMixin, View):
+    """Add a plain-text comment to an incident in the user's authorized scope."""
+    def post(self, request, pk):
+        incident = get_object_or_404(get_visible_incidents_for_user(request.user), pk=pk)
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.incident = incident
+            comment.author = request.user
+            comment.save()
+            record_audit_event(
+                action=AuditEvent.Action.COMMENT_ADDED,
+                request=request,
+                incident=incident,
+                details=f"Comment added by {request.user.username} (length {len(comment.body)})",
+            )
+            messages.success(request, "Comment added.")
+        else:
+            for error in form.errors.values():
+                messages.error(request, error.as_text())
+        return redirect("incidents:detail", pk=incident.pk)
 
 class IncidentAssignView(LoginRequiredMixin, View):
     """Assign or reassign an analyst to an incident. Admin-only function."""
@@ -79,8 +115,17 @@ class IncidentAssignView(LoginRequiredMixin, View):
             raise PermissionDenied("Only administrators can assign analysts.")
         form = IncidentAssignForm(request.POST)
         if form.is_valid():
-            incident.assigned_to = form.cleaned_data["assigned_to"]
+            new_assignee = form.cleaned_data["assigned_to"]
+            previous_name = incident.assigned_to.username if incident.assigned_to else "Unassigned"
+            new_name = new_assignee.username if new_assignee else "Unassigned"
+            incident.assigned_to = new_assignee
             incident.save(update_fields=["assigned_to"])
+            record_audit_event(
+                action=AuditEvent.Action.ASSIGNMENT,
+                request=request,
+                incident=incident,
+                details=f"Reassigned from {previous_name} to {new_name}",
+            )
             messages.success(request, f"Assigned analyst updated for {incident.reference}.")
         else:
             messages.error(request, "Failed to update assignment.")
@@ -89,15 +134,21 @@ class IncidentAssignView(LoginRequiredMixin, View):
 class IncidentStatusUpdateView(LoginRequiredMixin, View):
     """Update incident status. Assigned analyst or admin function."""
     def post(self, request, pk):
-        # Must be in user's visible scope first
         incident = get_object_or_404(get_visible_incidents_for_user(request.user), pk=pk)
         if not can_update_incident_status(request.user, incident):
             raise PermissionDenied("You are not authorized to update this incident's status.")
         form = IncidentStatusUpdateForm(request.POST, incident=incident)
         if form.is_valid():
+            old_status = incident.status
             new_status = form.cleaned_data["status"]
             try:
                 incident.transition_to(new_status)
+                record_audit_event(
+                    action=AuditEvent.Action.STATUS_CHANGE,
+                    request=request,
+                    incident=incident,
+                    details=f"Transitioned from {old_status} to {new_status}",
+                )
                 messages.success(request, f"Status updated to {incident.get_status_display()}.")
             except Exception as e:
                 messages.error(request, f"State transition rejected: {e}")

@@ -83,3 +83,56 @@ class Incident(models.Model):
 
     def __str__(self):
         return f"{self.reference}: {self.title} [{self.get_status_display()}]"
+
+
+class Comment(models.Model):
+    """
+    Plain-text comment attached to an incident.
+    Must always be treated and rendered as inert plain-text (anti-stored XSS).
+    """
+    incident = models.ForeignKey(Incident, on_delete=models.CASCADE, related_name="comments")
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="incident_comments")
+    body = models.TextField(max_length=2000, validators=[MinLengthValidator(2)])
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at", "pk"]
+        indexes = [
+            models.Index(fields=["incident", "created_at"], name="comment_incident_created_idx"),
+        ]
+
+    def __str__(self):
+        return f"Comment by {self.author.username} on {self.incident.reference} at {self.created_at}"
+
+
+class AuditEvent(models.Model):
+    """
+    Application security audit log.
+    Records critical events without storing sensitive data (no passwords, tokens or secrets).
+    """
+    class Action(models.TextChoices):
+        LOGIN_SUCCESS = "login_success", "Login Success"
+        LOGIN_FAILED = "login_failed", "Login Failed"
+        LOGOUT = "logout", "Logout"
+        STATUS_CHANGE = "status_change", "Status Change"
+        ASSIGNMENT = "assignment", "Assignment Changed"
+        COMMENT_ADDED = "comment_added", "Comment Added"
+        INCIDENT_CREATED = "incident_created", "Incident Created"
+
+    action = models.CharField(max_length=40, choices=Action.choices)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    username_snapshot = models.CharField(max_length=150, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    incident = models.ForeignKey(Incident, on_delete=models.CASCADE, null=True, blank=True, related_name="audit_events")
+    details = models.CharField(max_length=500, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at", "-pk"]
+        indexes = [
+            models.Index(fields=["action", "-created_at"], name="audit_action_created_idx"),
+            models.Index(fields=["incident", "-created_at"], name="audit_incident_created_idx"),
+        ]
+
+    def __str__(self):
+        return f"[{self.created_at}] {self.get_action_display()} - User: {self.username_snapshot} - IP: {self.ip_address}"
