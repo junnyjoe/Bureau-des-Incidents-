@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from incidents.models import Incident
@@ -17,7 +18,9 @@ class Command(BaseCommand):
         ]:
             user, created = get_user_model().objects.get_or_create(username=name)
             if created:
-                user.set_password("local-training-only")
+                raw_password = "local-training-only"
+                validate_password(raw_password, user=user)
+                user.set_password(raw_password)
                 user.save()
-            Incident.objects.get_or_create(created_by=user, title=title, defaults={"description":description})
+            Incident.objects.get_or_create(created_by=user, title=title, defaults={"description": description})
         self.stdout.write("Local fixtures ready: lab-alice / lab-bob, password local-training-only. Never use these accounts elsewhere.")
