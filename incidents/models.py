@@ -35,7 +35,18 @@ class Incident(models.Model):
         choices=Status.choices,
         default=Status.OPEN,
     )
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="incidents")
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="incidents",
+    )
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="assigned_incidents",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -43,6 +54,7 @@ class Incident(models.Model):
         indexes = [
             models.Index(fields=["created_by", "-created_at"], name="incident_owner_created_idx"),
             models.Index(fields=["status", "-created_at"], name="incident_status_created_idx"),
+            models.Index(fields=["assigned_to", "-created_at"], name="incident_assigned_created_idx"),
         ]
 
     @property

@@ -1,5 +1,7 @@
 from django import forms
+from django.contrib.auth import get_user_model
 from .models import Incident
+from .permissions import ROLE_ANALYSTS, ROLE_ADMINISTRATORS
 
 class IncidentForm(forms.ModelForm):
     class Meta:
@@ -19,7 +21,6 @@ class IncidentForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Default to MEDIUM if not specified in POST or form initialization
         self.fields["severity"].required = False
         if not self.initial.get("severity"):
             self.initial["severity"] = Incident.Severity.MEDIUM
@@ -31,3 +32,38 @@ class IncidentForm(forms.ModelForm):
         if severity not in Incident.Severity.values:
             raise forms.ValidationError("Invalid severity selected.")
         return severity
+
+class IncidentAssignForm(forms.Form):
+    assigned_to = forms.ModelChoiceField(
+        queryset=get_user_model().objects.none(),
+        required=False,
+        empty_label="-- Unassigned --",
+        widget=forms.Select(attrs={"class": "form-select"}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        User = get_user_model()
+        self.fields["assigned_to"].queryset = User.objects.filter(
+            groups__name__in=[ROLE_ANALYSTS, ROLE_ADMINISTRATORS]
+        ).distinct()
+
+class IncidentStatusUpdateForm(forms.Form):
+    status = forms.ChoiceField(
+        choices=Incident.Status.choices,
+        widget=forms.Select(attrs={"class": "form-select"}),
+    )
+
+    def __init__(self, *args, incident=None, **kwargs):
+        self.incident = incident
+        super().__init__(*args, **kwargs)
+        if incident:
+            self.fields["status"].initial = incident.status
+
+    def clean_status(self):
+        new_status = self.cleaned_data.get("status")
+        if self.incident and not self.incident.can_transition_to(new_status):
+            raise forms.ValidationError(
+                f"Invalid transition from {self.incident.get_status_display()} to {dict(Incident.Status.choices).get(new_status, new_status)}."
+            )
+        return new_status
