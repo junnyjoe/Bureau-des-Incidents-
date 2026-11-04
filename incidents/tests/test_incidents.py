@@ -1,5 +1,6 @@
 from io import StringIO
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.core.management import call_command, CommandError
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
@@ -158,3 +159,90 @@ class SessionTests(TestCase):
         from django.contrib.sessions.models import Session
         self.assertFalse(Session.objects.filter(session_key=old).exists())
         self.assertNotIn("_auth_user_id", client.session)
+
+
+class IncidentLifecycleAndValidationTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.alice = get_user_model().objects.create_user(username="alice_v2", password="test-password-only")
+
+    def test_default_severity_and_status(self):
+        incident = Incident.objects.create(
+            title="Default values test",
+            description="Testing that default status and severity are applied.",
+            created_by=self.alice,
+        )
+        self.assertEqual(incident.severity, Incident.Severity.MEDIUM)
+        self.assertEqual(incident.status, Incident.Status.OPEN)
+
+    def test_form_submits_valid_severity(self):
+        self.client.force_login(self.alice)
+        response = self.client.post(reverse("incidents:create"), {
+            "title": "High severity event",
+            "description": "Critical infrastructure warning observed.",
+            "severity": Incident.Severity.HIGH,
+        })
+        incident = Incident.objects.get(title="High severity event")
+        self.assertEqual(incident.severity, Incident.Severity.HIGH)
+        self.assertEqual(incident.status, Incident.Status.OPEN)
+        self.assertRedirects(response, reverse("incidents:detail", args=[incident.pk]))
+
+    def test_invalid_severity_rejected(self):
+        self.client.force_login(self.alice)
+        before = Incident.objects.count()
+        response = self.client.post(reverse("incidents:create"), {
+            "title": "Invalid severity attempt",
+            "description": "Attempting to inject a non-existent severity choice.",
+            "severity": "catastrophic",
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["form"].errors)
+        self.assertIn("severity", response.context["form"].errors)
+        self.assertEqual(Incident.objects.count(), before)
+
+    def test_mass_assignment_status_ignored_on_creation(self):
+        self.client.force_login(self.alice)
+        response = self.client.post(reverse("incidents:create"), {
+            "title": "Mass assignment attempt",
+            "description": "Reporter attempting to mark incident as resolved at creation.",
+            "status": Incident.Status.RESOLVED,
+        })
+        incident = Incident.objects.get(title="Mass assignment attempt")
+        self.assertEqual(incident.status, Incident.Status.OPEN)
+        self.assertRedirects(response, reverse("incidents:detail", args=[incident.pk]))
+
+    def test_allowed_state_transitions(self):
+        incident = Incident.objects.create(
+            title="Transition test",
+            description="Testing allowed state progression.",
+            created_by=self.alice,
+        )
+        # OPEN -> IN_PROGRESS
+        incident.transition_to(Incident.Status.IN_PROGRESS)
+        self.assertEqual(incident.status, Incident.Status.IN_PROGRESS)
+
+        # IN_PROGRESS -> RESOLVED
+        incident.transition_to(Incident.Status.RESOLVED)
+        self.assertEqual(incident.status, Incident.Status.RESOLVED)
+
+        # RESOLVED -> CLOSED
+        incident.transition_to(Incident.Status.CLOSED)
+        self.assertEqual(incident.status, Incident.Status.CLOSED)
+
+        # CLOSED -> OPEN (reopen)
+        incident.transition_to(Incident.Status.OPEN)
+        self.assertEqual(incident.status, Incident.Status.OPEN)
+
+    def test_invalid_state_transition_rejected(self):
+        incident = Incident.objects.create(
+            title="Invalid transition test",
+            description="Testing illegal transition jumping directly to resolved.",
+            created_by=self.alice,
+            status=Incident.Status.OPEN,
+        )
+        # Directly OPEN -> RESOLVED is prohibited (must be triaged/in-progress first)
+        with self.assertRaises(ValidationError):
+            incident.transition_to(Incident.Status.RESOLVED)
+
+        incident.refresh_from_db()
+        self.assertEqual(incident.status, Incident.Status.OPEN)

@@ -3,7 +3,8 @@ from .models import Incident
 
 @admin.register(Incident)
 class IncidentAdmin(admin.ModelAdmin):
-    list_display = ["id", "title", "created_by", "created_at"]
+    list_display = ["id", "reference", "title", "severity", "status", "created_by", "created_at"]
+    list_filter = ["status", "severity", "created_at"]
     list_select_related = ["created_by"]
     search_fields = ["title", "created_by__username"]
     readonly_fields = ["created_by", "created_at"]
