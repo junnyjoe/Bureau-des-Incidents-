@@ -4,31 +4,34 @@
   <div>
     <p class="eyebrow">YOUR WORKSPACE</p>
     <h1>Incident Register<span class="heading-dot">.</span></h1>
-    <p class="muted">Role-scoped view of incidents and operational assignments.</p>
+    <p class="muted">Role-scoped view of security events, lifecycle triage, and operational assignments.</p>
   </div>
   <div style="display:flex; gap:10px; align-items:center;">
-    <a class="button-quiet" href="{% url 'incidents:export_csv' %}" style="padding: 9px 14px; font-size: 13px; text-decoration: none;">📥 Export CSV</a>
-    <a class="button-quiet" href="{% url 'incidents:export_json' %}" style="padding: 9px 14px; font-size: 13px; text-decoration: none;">📄 Export JSON</a>
+    <a class="button-quiet" href="{% url 'incidents:export_csv' %}">📥 Export CSV</a>
+    <a class="button-quiet" href="{% url 'incidents:export_json' %}">📄 Export JSON</a>
     <a class="button-primary" href="{% url 'incidents:create' %}"><span aria-hidden="true">+</span> New incident</a>
   </div>
 </div>
 
 <div class="summary-strip">
-  <div><span class="summary-number">{{ paginator.count|stringformat:'02d' }}</span><span class="summary-label">MATCHES</span></div>
+  <div>
+    <span class="summary-number">{{ paginator.count|stringformat:'02d' }}</span>
+    <span class="summary-label">MATCHES</span>
+  </div>
   <p>Only incidents within your authorized role scope appear here.<br><span class="muted">Parameterized ORM queries eliminate SQL injection risks.</span></p>
 </div>
 
 <!-- Search and Filter Bar -->
 <section class="card" style="margin-bottom: 24px; padding: 18px 20px;">
   <form method="get" action="{% url 'incidents:list' %}" style="display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end;">
-    <div style="flex: 2; min-width: 220px;">
-      <label for="id_q" style="display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 6px;">Search keyword / Ref</label>
-      <input type="text" name="q" id="id_q" value="{{ search_q }}" placeholder="e.g. laptop, network or INC-0001" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--line); border-radius: 6px;">
+    <div style="flex: 2; min-width: 240px;">
+      <label for="id_q">Search keyword / Ref</label>
+      <input type="text" name="q" id="id_q" value="{{ search_q }}" placeholder="e.g. laptop, network or INC-0001">
     </div>
 
     <div style="flex: 1; min-width: 140px;">
-      <label for="id_status" style="display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 6px;">Status</label>
-      <select name="status" id="id_status" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--line); border-radius: 6px; background: #fff;">
+      <label for="id_status">Status</label>
+      <select name="status" id="id_status">
         <option value="">All statuses</option>
         {% for val, label in status_choices %}
         <option value="{{ val }}" {% if filter_status == val %}selected{% endif %}>{{ label }}</option>
@@ -37,8 +40,8 @@
     </div>
 
     <div style="flex: 1; min-width: 140px;">
-      <label for="id_severity" style="display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 6px;">Severity</label>
-      <select name="severity" id="id_severity" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--line); border-radius: 6px; background: #fff;">
+      <label for="id_severity">Severity</label>
+      <select name="severity" id="id_severity">
         <option value="">All severities</option>
         {% for val, label in severity_choices %}
         <option value="{{ val }}" {% if filter_severity == val %}selected{% endif %}>{{ label }}</option>
@@ -47,9 +50,9 @@
     </div>
 
     <div style="display: flex; gap: 8px; align-items: center;">
-      <button class="button-primary" type="submit" style="padding: 9px 18px; font-size: 13px;">Filter</button>
+      <button class="button-primary" type="submit">Filter</button>
       {% if search_q or filter_status or filter_severity or filter_date_from or filter_date_to %}
-      <a href="{% url 'incidents:list' %}" class="button-quiet" style="padding: 9px 12px; font-size: 13px; text-decoration: none;">Clear</a>
+      <a href="{% url 'incidents:list' %}" class="button-quiet">Clear</a>
       {% endif %}
     </div>
   </form>

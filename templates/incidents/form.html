@@ -1,7 +1,51 @@
-{% extends 'base.html' %}{% block title %}New incident · Incident Desk{% endblock %}
-{% block content %}<a class="back-link" href="{% url 'incidents:list' %}">← My incidents</a><div class="section-heading"><div><p class="eyebrow">CREATE A REPORT</p><h1>New incident<span class="heading-dot">.</span></h1><p class="muted">Start with a clear title and the facts you know.</p></div></div>
-<div class="form-layout"><section class="card form-card"><form method="post">{% csrf_token %}
-{% if form.errors %}<div class="form-alert" role="alert">Please correct the fields below.</div>{% endif %}{{ form.non_field_errors }}
-{% for field in form %}<div class="field-group"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}<p class="help-text">{{ field.help_text }}</p>{% if field.errors %}<div class="field-errors" role="alert">{{ field.errors }}</div>{% endif %}</div>{% endfor %}
-<div class="form-actions"><button class="button-primary" type="submit">Create incident <span aria-hidden="true">→</span></button><a class="button-quiet" href="{% url 'incidents:list' %}">Cancel</a></div></form></section>
-<aside class="guidance"><span class="guide-line"></span><h2>A useful report</h2><p>Describe what you observed, when it happened, and what you expected instead.</p><p>Keep passwords, access tokens, and personal information out of your report.</p><p class="small muted">Your account is assigned as the owner automatically.</p></aside></div>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}New incident · Incident Desk{% endblock %}
+{% block content %}
+<a class="back-link" href="{% url 'incidents:list' %}">← Incident register</a>
+
+<div class="section-heading">
+  <div>
+    <p class="eyebrow">CREATE A REPORT</p>
+    <h1>New incident<span class="heading-dot">.</span></h1>
+    <p class="muted">Document factual observations, affected assets, and estimated impact.</p>
+  </div>
+</div>
+
+<div class="form-layout">
+  <section class="card form-card">
+    <form method="post">
+      {% csrf_token %}
+      {% if form.errors %}
+      <div class="form-alert" role="alert">Please correct the highlighted fields below.</div>
+      {% endif %}
+      {{ form.non_field_errors }}
+
+      {% for field in form %}
+      <div class="field-group">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}
+        <p class="help-text">{{ field.help_text }}</p>
+        {% endif %}
+        {% if field.errors %}
+        <div class="field-errors" role="alert">{{ field.errors }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+
+      <div class="form-actions">
+        <button class="button-primary" type="submit">Create incident <span aria-hidden="true">→</span></button>
+        <a class="button-quiet" href="{% url 'incidents:list' %}">Cancel</a>
+      </div>
+    </form>
+  </section>
+
+  <aside class="guidance">
+    <span class="guide-line"></span>
+    <h2>Reporting Guidelines</h2>
+    <p>Describe precisely what happened, the systems affected, and timestamps if known.</p>
+    <p><strong>Sanitization notice:</strong> Do not include unredacted credentials, API keys, or private customer records.</p>
+    <p class="small muted" style="margin-top: 16px; border-top: 1px solid var(--border-subtle); padding-top: 12px;">Your user account will be stamped as the author and owner automatically.</p>
+  </aside>
+</div>
+{% endblock %}

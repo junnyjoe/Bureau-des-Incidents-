@@ -1,30 +1,37 @@
 {% extends 'base.html' %}{% block title %}{{ incident.reference }} · Incident Desk{% endblock %}
-{% block content %}<a class="back-link" href="{% url 'incidents:list' %}">← My incidents</a><div class="detail-heading"><p class="eyebrow">{{ incident.reference }}</p><h1>{{ incident.title }}</h1></div>
+{% block content %}
+<a class="back-link" href="{% url 'incidents:list' %}">← Incident register</a>
+<div class="detail-heading">
+  <p class="eyebrow">{{ incident.reference }}</p>
+  <h1>{{ incident.title }}</h1>
+</div>
+
 <div class="detail-layout">
 <article class="card detail-card">
   <h2>What happened</h2>
   <div class="description-text">{{ incident.description }}</div>
 
   {% if can_update_status or can_assign %}
-  <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--line);">
+  <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border-subtle);">
     <h2>Operational controls</h2>
     {% if can_update_status %}
-    <form method="post" action="{% url 'incidents:update_status' incident.pk %}" style="margin-bottom: 24px;">
+    <form method="post" action="{% url 'incidents:update_status' incident.pk %}" style="margin-bottom: 20px;">
       {% csrf_token %}
       <label for="id_status">Update status</label>
-      <div style="display: flex; gap: 12px; align-items: center; max-width: 400px;">
+      <div style="display: flex; gap: 10px; align-items: center; max-width: 420px;">
         {{ status_form.status }}
-        <button class="button-primary" type="submit" style="padding: 10px 16px;">Update</button>
+        <button class="button-primary" type="submit">Update</button>
       </div>
     </form>
     {% endif %}
+
     {% if can_assign %}
     <form method="post" action="{% url 'incidents:assign' incident.pk %}">
       {% csrf_token %}
       <label for="id_assigned_to">Assign analyst (Admin)</label>
-      <div style="display: flex; gap: 12px; align-items: center; max-width: 400px;">
+      <div style="display: flex; gap: 10px; align-items: center; max-width: 420px;">
         {{ assign_form.assigned_to }}
-        <button class="button-primary" type="submit" style="padding: 10px 16px;">Assign</button>
+        <button class="button-primary" type="submit">Assign</button>
       </div>
     </form>
     {% endif %}
@@ -32,72 +39,72 @@
   {% endif %}
 
   <!-- Comments section (Anti-Stored XSS: plain text autoescaping) -->
-  <div style="margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--line);">
+  <div style="margin-top: 36px; padding-top: 24px; border-top: 1px solid var(--border-subtle);">
     <h2>Operational notes & comments ({{ comments|length }})</h2>
     {% if comments %}
-      <div style="margin-top: 18px; display: flex; flex-direction: column; gap: 18px;">
+      <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 14px;">
         {% for comment in comments %}
-        <div style="background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; color: var(--muted);">
+        <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 16px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; color: var(--ink-muted);">
             <strong style="color: var(--ink);">{{ comment.author.get_username }}</strong>
-            <span>{{ comment.created_at|date:'M j, Y H:i' }} UTC</span>
+            <span style="font-variant-numeric: tabular-nums;">{{ comment.created_at|date:'M j, Y H:i' }} UTC</span>
           </div>
           <!-- Autoescaped plain text rendering -->
-          <div style="font-size: 13px; line-height: 1.7; white-space: pre-wrap; word-break: break-word;">{{ comment.body }}</div>
+          <div style="font-size: 13px; line-height: 1.65; white-space: pre-wrap; word-break: break-word; color: var(--ink-secondary);">{{ comment.body }}</div>
         </div>
         {% endfor %}
       </div>
     {% else %}
-      <p class="muted" style="font-size: 13px; margin: 15px 0;">No comments on this report yet.</p>
+      <p class="muted" style="font-size: 13px; margin: 12px 0;">No comments on this report yet.</p>
     {% endif %}
 
     <!-- Add comment form -->
-    <form method="post" action="{% url 'incidents:add_comment' incident.pk %}" style="margin-top: 24px;">
+    <form method="post" action="{% url 'incidents:add_comment' incident.pk %}" style="margin-top: 20px;">
       {% csrf_token %}
       <label for="id_body">Add a plain-text note</label>
       {{ comment_form.body }}
-      <p class="help-text" style="font-size: 11px; color: var(--muted); margin: 6px 0 14px;">{{ comment_form.body.help_text }}</p>
-      <button class="button-primary" type="submit" style="padding: 10px 18px;">Post comment</button>
+      <p class="help-text" style="font-size: 11px; color: var(--ink-muted); margin: 6px 0 12px;">{{ comment_form.body.help_text }}</p>
+      <button class="button-primary" type="submit">Post comment</button>
     </form>
   </div>
 
   <!-- Evidence & Attachments Section (Magic bytes & SHA-256 verified) -->
-  <div style="margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--line);">
+  <div style="margin-top: 36px; padding-top: 24px; border-top: 1px solid var(--border-subtle);">
     <h2>Forensic evidence & attachments ({{ attachments|length }})</h2>
     {% if attachments %}
-      <div style="margin-top: 18px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 10px;">
         {% for att in attachments %}
-        <div style="display: flex; justify-content: space-between; align-items: center; background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 12px 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px 16px;">
           <div>
-            <div style="font-weight: 600; font-size: 13px; color: var(--ink);">{{ att.original_filename }}</div>
-            <div class="small muted" style="margin-top: 4px; font-family: monospace; font-size: 11px;">
+            <div style="font-weight: 600; font-size: 13px; color: var(--ink);">📁 {{ att.original_filename }}</div>
+            <div class="small muted" style="margin-top: 4px; font-family: ui-monospace, monospace; font-size: 11px;">
               {{ att.content_type }} · {{ att.file_size }} bytes · SHA-256: {{ att.sha256_hash|slice:":16" }}...
             </div>
-            <div class="small muted" style="font-size: 11px;">Uploaded by {{ att.uploaded_by.username }} on {{ att.created_at|date:'M j, H:i' }} UTC</div>
+            <div class="small muted" style="font-size: 11px; margin-top: 2px;">Uploaded by {{ att.uploaded_by.username }} on {{ att.created_at|date:'M j, H:i' }} UTC</div>
           </div>
-          <a href="{% url 'incidents:download_attachment' att.pk %}" class="button-quiet" style="padding: 8px 14px; font-size: 12px; text-decoration: none;">Download ↗</a>
+          <a href="{% url 'incidents:download_attachment' att.pk %}" class="button-quiet" style="font-size: 12px;">Download ↗</a>
         </div>
         {% endfor %}
       </div>
     {% else %}
-      <p class="muted" style="font-size: 13px; margin: 15px 0;">No evidence files attached yet.</p>
+      <p class="muted" style="font-size: 13px; margin: 12px 0;">No evidence files attached yet.</p>
     {% endif %}
 
     <!-- Upload Evidence Form -->
-    <form method="post" enctype="multipart/form-data" action="{% url 'incidents:upload_attachment' incident.pk %}" style="margin-top: 20px; background: #fafafa; border: 1px dashed var(--line); padding: 16px; border-radius: 8px;">
+    <form method="post" enctype="multipart/form-data" action="{% url 'incidents:upload_attachment' incident.pk %}" style="margin-top: 18px; background: var(--bg-subtle); border: 1px dashed var(--border-strong); padding: 16px; border-radius: var(--radius-sm);">
       {% csrf_token %}
       <label for="id_file" style="font-weight: 600; font-size: 13px;">Attach evidence file</label>
       <p class="small muted" style="margin-bottom: 10px;">{{ attachment_form.file.help_text }}</p>
-      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
         {{ attachment_form.file }}
-        <button class="button-primary" type="submit" style="padding: 8px 16px; font-size: 13px;">Upload file</button>
+        <button class="button-primary" type="submit">Upload file</button>
       </div>
     </form>
   </div>
 
   <!-- Audit trail section (Admin and assigned analyst only) -->
   {% if audit_events %}
-  <div style="margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--line);">
+  <div style="margin-top: 36px; padding-top: 24px; border-top: 1px solid var(--border-subtle);">
     <h2>Security audit log</h2>
     <div class="table-scroll" style="margin-top: 14px;">
       <table>
@@ -112,9 +119,9 @@
         <tbody>
           {% for ev in audit_events %}
           <tr>
-            <td><span class="badge" style="background:#e8ece8; font-size:10px;">{{ ev.get_action_display }}</span></td>
-            <td style="font-size: 12px;">{{ ev.username_snapshot }}</td>
-            <td style="font-size: 12px; color: var(--muted); max-width: 300px; word-break: break-word;">{{ ev.details }}</td>
+            <td><span class="badge" style="background:var(--bg-subtle); border: 1px solid var(--border-subtle); font-size:10px;">{{ ev.get_action_display }}</span></td>
+            <td style="font-size: 12px; font-weight: 500;">{{ ev.username_snapshot }}</td>
+            <td style="font-size: 12px; color: var(--ink-secondary); max-width: 320px; word-break: break-word;">{{ ev.details }}</td>
             <td class="date-cell">{{ ev.created_at|date:'M j, H:i:s' }}</td>
           </tr>
           {% endfor %}
@@ -135,13 +142,13 @@
     <dt>Severity</dt>
     <dd><span class="badge badge-severity badge-{{ incident.severity }}">{{ incident.get_severity_display }}</span></dd>
     <dt>Reported by</dt>
-    <dd>{{ incident.created_by.get_username }}</dd>
+    <dd style="font-weight: 500;">{{ incident.created_by.get_username }}</dd>
     <dt>Assigned analyst</dt>
-    <dd>{% if incident.assigned_to %}{{ incident.assigned_to.get_username }}{% else %}<span class="muted">Unassigned</span>{% endif %}</dd>
+    <dd>{% if incident.assigned_to %}<span style="font-weight: 500;">{{ incident.assigned_to.get_username }}</span>{% else %}<span class="muted">Unassigned</span>{% endif %}</dd>
     <dt>Created</dt>
-    <dd>{{ incident.created_at|date:'M j, Y' }}<br><span class="muted">{{ incident.created_at|date:'H:i' }} UTC</span></dd>
+    <dd style="font-variant-numeric: tabular-nums;">{{ incident.created_at|date:'M j, Y' }}<br><span class="muted">{{ incident.created_at|date:'H:i' }} UTC</span></dd>
   </dl>
-  <p class="small muted">Role-based access enforced server-side.</p>
+  <p class="small muted" style="margin-top: 20px; border-top: 1px solid var(--border-subtle); padding-top: 12px;">🛡️ Role-based access enforced server-side.</p>
 </aside>
 </div>
 {% endblock %}

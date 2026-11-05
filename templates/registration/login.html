@@ -1,12 +1,47 @@
-{% extends 'base.html' %}{% block title %}Sign in · Incident Desk{% endblock %}
-{% block content %}<div class="login-layout"><section class="login-intro"><p class="eyebrow">A SMALL APP. A SECURE FOUNDATION.</p>
-<h1>Make the first<br>report count.</h1><p class="lead">A focused workspace to record incidents, keep the details together, and build better security habits.</p>
-<div class="intro-note"><span class="note-number">01 /</span><p>Version 0 starts with the essentials. Your course milestones turn this foundation into a complete incident workflow.</p></div></section>
-<section class="card login-card"><p class="eyebrow">YOUR WORKSPACE</p><h2>Sign in</h2><p class="muted">Use the account created by your administrator.</p>
-{% if lockout_error %}<div class="form-alert" role="alert" style="border-left: 3px solid #b91c1c;">{{ lockout_error }}</div>
-{% elif form.errors %}<div class="form-alert" role="alert">We couldn't sign you in. Check your username and password.</div>{% endif %}
-<form method="post">{% csrf_token %}<input type="hidden" name="next" value="{{ next }}">
-<label for="id_username">Username</label><input type="text" name="username" id="id_username" autocomplete="username" maxlength="150" autofocus required value="{{ form.username.value|default:'' }}">
-<label for="id_password">Password</label><input type="password" name="password" id="id_password" autocomplete="current-password" required>
-<button class="button-primary full-width" type="submit">Sign in <span aria-hidden="true">→</span></button></form>
-<p class="small muted login-footnote">No account? Ask your course administrator. Public registration is not enabled.</p></section></div>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Sign in · Incident Desk{% endblock %}
+{% block content %}
+<div class="login-layout">
+  <section class="login-intro">
+    <p class="eyebrow">APPLICATION SECURITY PLATFORM</p>
+    <h1>Incident response,<br>simplified and secured<span class="heading-dot">.</span></h1>
+    <p class="lead">A centralized, hardened console to record security events, track triage progress, and enforce strict role-based access control.</p>
+
+    <div class="intro-note">
+      <span class="note-number">01 /</span>
+      <p>Hardened authentication: IP-based rate limiting, session idle termination, and two-factor authentication for privileged accounts.</p>
+    </div>
+  </section>
+
+  <section class="card login-card">
+    <p class="eyebrow">OPERATIONAL CONSOLE</p>
+    <h2>Sign in</h2>
+    <p class="muted">Access your authorized incident workspace.</p>
+
+    {% if lockout_error %}
+    <div class="form-alert" role="alert" style="border-left: 3px solid #b91c1c;">{{ lockout_error }}</div>
+    {% elif form.errors %}
+    <div class="form-alert" role="alert">We couldn't sign you in. Check your username and password.</div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+
+      <div style="margin-bottom: 16px;">
+        <label for="id_username">Username</label>
+        <input type="text" name="username" id="id_username" autocomplete="username" maxlength="150" autofocus required value="{{ form.username.value|default:'' }}" placeholder="e.g. analyst_charlie">
+      </div>
+
+      <div style="margin-bottom: 22px;">
+        <label for="id_password">Password</label>
+        <input type="password" name="password" id="id_password" autocomplete="current-password" required placeholder="••••••••••••">
+      </div>
+
+      <button class="button-primary full-width" type="submit" style="padding: 11px;">Sign in <span aria-hidden="true">→</span></button>
+    </form>
+
+    <p class="small muted login-footnote">Restricted system. Access is monitored and logged in compliance with audit policy.</p>
+  </section>
+</div>
+{% endblock %}

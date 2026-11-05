@@ -1,15 +1,59 @@
 {% load static %}<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block title %}Incident Desk{% endblock %}</title><link rel="stylesheet" href="{% static 'css/app.css' %}"></head>
-<body><a class="skip-link" href="#main">Skip to content</a>
-<header class="site-header"><div class="header-inner"><a class="brand" href="{% url 'incidents:list' %}"><span class="brand-mark" aria-hidden="true">i.</span> Incident Desk</a>
-{% if user.is_authenticated %}
-<nav style="display:flex; gap:16px; align-items:center; margin-left:24px;">
-  <a href="{% url 'incidents:list' %}" style="color:var(--ink); font-size:13px; text-decoration:none; font-weight:500;">Incidents</a>
-  <a href="{% url 'incidents:dashboard' %}" style="color:var(--ink); font-size:13px; text-decoration:none; font-weight:500;">SOC Dashboard</a>
-</nav>
-{% endif %}
-<div class="account-nav">{% if user.is_authenticated %}<span class="identity">{{ user.get_username }}</span>
-<form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="button-quiet" type="submit">Log out <span aria-hidden="true">↗</span></button></form>{% else %}<span class="course-label">APPLICATION SECURITY / STARTER 01</span>{% endif %}</div></div></header>
-<main id="main" class="page-shell">{% if messages %}<div class="messages" role="status">{% for message in messages %}<p>{{ message }}</p>{% endfor %}</div>{% endif %}{% block content %}{% endblock %}</main>
-<footer class="site-footer"><span>Incident Desk</span><span>Course workspace · Synthetic data only</span></footer></body></html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Incident Desk{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <div style="display: flex; align-items: center;">
+        <a class="brand" href="{% url 'incidents:list' %}">
+          <span class="brand-mark" aria-hidden="true">ID</span>
+          <span>Incident Desk</span>
+        </a>
+        {% if user.is_authenticated %}
+        <nav class="main-nav" aria-label="Main Navigation">
+          <a class="nav-link" href="{% url 'incidents:list' %}">Incidents</a>
+          <a class="nav-link" href="{% url 'incidents:dashboard' %}">SOC Dashboard</a>
+        </nav>
+        {% endif %}
+      </div>
+
+      <div class="account-nav">
+        {% if user.is_authenticated %}
+        <div class="identity-badge">
+          <span class="identity-dot" aria-hidden="true"></span>
+          <span class="identity">{{ user.get_username }}</span>
+        </div>
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button class="button-quiet" type="submit">Log out <span aria-hidden="true">↗</span></button>
+        </form>
+        {% else %}
+        <span class="course-label">SecOps Incident Response · ISO/IEC 27035</span>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="page-shell">
+    {% if messages %}
+    <div class="messages" role="status">
+      {% for message in messages %}
+      <p>{{ message }}</p>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <span>🛡️ Incident Desk · Incident Response Management</span>
+    <span>Encrypted Session · Strict RBAC · Synthetic Data</span>
+  </footer>
+</body>
+</html>

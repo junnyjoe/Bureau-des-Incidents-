@@ -1,25 +1,48 @@
-{% extends 'base.html' %}{% block title %}Two-Factor Authentication · Incident Desk{% endblock %}
-{% block content %}<div class="login-layout"><section class="login-intro"><p class="eyebrow">PRIVILEGED ROLE SECURITY</p>
-<h1>Two-factor<br>verification.</h1><p class="lead">Analyst and Administrator accounts require multi-factor authentication (MFA) to safeguard critical security incident data.</p>
-<div class="intro-note"><span class="note-number">02 /</span><p>Protecting incident triage with time-based one-time passwords (RFC 6238 TOTP).</p></div></section>
-<section class="card login-card"><p class="eyebrow">AUTHENTICATION STEP 2</p><h2>Security Check</h2>
-<p class="muted">Hello <strong>{{ user_obj.username }}</strong>. Enter the verification code from your authenticator application.</p>
-{% if error %}<div class="form-alert" role="alert" style="border-left: 3px solid #b91c1c;">{{ error }}</div>{% endif %}
+{% extends 'base.html' %}
+{% block title %}Two-Factor Authentication · Incident Desk{% endblock %}
+{% block content %}
+<div class="login-layout">
+  <section class="login-intro">
+    <p class="eyebrow">PRIVILEGED ROLE HARDENING</p>
+    <h1>Two-factor<br>verification<span class="heading-dot">.</span></h1>
+    <p class="lead">Analyst and Administrator accounts require multi-factor authentication (MFA) to safeguard critical security incident data and audit records.</p>
 
-{% if not is_confirmed %}
-<div class="intro-note" style="margin-bottom: 1.5rem; background: #f8fafc; border: 1px solid #e2e8f0; padding: 1rem; border-radius: 6px;">
-  <p style="font-weight: 600; margin-bottom: 0.5rem;">📱 Initial Enrollment Required</p>
-  <p class="small" style="margin-bottom: 0.5rem;">Add this account to your authenticator app (Google Authenticator, Aegis, Bitwarden, etc.) using the secret key below:</p>
-  <div style="background: #ffffff; padding: 0.5rem; font-family: monospace; font-size: 1.1rem; letter-spacing: 2px; text-align: center; border: 1px dashed #cbd5e1; user-select: all;">
-    {{ device.secret }}
-  </div>
-  <p class="small muted" style="margin-top: 0.5rem;">Or use this link: <a href="{{ totp_uri }}" style="word-break: break-all;">Add to Authenticator</a></p>
+    <div class="intro-note">
+      <span class="note-number">02 /</span>
+      <p>Protecting incident triage with time-based one-time passwords (RFC 6238 TOTP standard).</p>
+    </div>
+  </section>
+
+  <section class="card login-card">
+    <p class="eyebrow">STEP 2 OF 2</p>
+    <h2>Security Check</h2>
+    <p class="muted">Signed in as <strong>{{ user_obj.username }}</strong>. Enter your authenticator verification code.</p>
+
+    {% if error %}
+    <div class="form-alert" role="alert" style="border-left: 3px solid #b91c1c;">{{ error }}</div>
+    {% endif %}
+
+    {% if not is_confirmed %}
+    <div style="margin-bottom: 20px; background: var(--bg-subtle); border: 1px solid var(--border-subtle); padding: 16px; border-radius: var(--radius-sm);">
+      <p style="font-weight: 600; font-size: 13px; margin-bottom: 6px; color: var(--ink);">📱 Initial Enrollment Required</p>
+      <p class="small muted" style="margin-bottom: 10px;">Register this account in your authenticator app (Google Authenticator, Aegis, Bitwarden) with the key below:</p>
+      <div style="background: #ffffff; padding: 10px; font-family: ui-monospace, monospace; font-size: 1.15rem; letter-spacing: 3px; font-weight: 700; text-align: center; border: 1px dashed var(--border-strong); border-radius: 4px; user-select: all; color: var(--brand-navy);">
+        {{ device.secret }}
+      </div>
+      <p class="small muted" style="margin-top: 8px;"><a href="{{ totp_uri }}" class="text-link" style="word-break: break-all; font-size: 12px;">Add directly to Authenticator ↗</a></p>
+    </div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <div style="margin-bottom: 20px;">
+        <label for="id_code">6-digit Security Code</label>
+        <input type="text" name="code" id="id_code" inputmode="numeric" pattern="[0-9]*" maxlength="6" autofocus required placeholder="000000" style="letter-spacing: 6px; font-size: 1.4rem; font-weight: 700; text-align: center; font-family: ui-monospace, monospace; padding: 10px;">
+      </div>
+      <button class="button-primary full-width" type="submit" style="padding: 11px;">Verify & Continue <span aria-hidden="true">→</span></button>
+    </form>
+
+    <p class="small muted login-footnote"><a href="{% url 'login' %}" class="text-link">← Return to sign in</a></p>
+  </section>
 </div>
-{% endif %}
-
-<form method="post">{% csrf_token %}
-<label for="id_code">6-digit Verification Code</label>
-<input type="text" name="code" id="id_code" inputmode="numeric" pattern="[0-9]*" maxlength="6" autofocus required placeholder="123456" style="letter-spacing: 4px; font-size: 1.25rem; text-align: center;">
-<button class="button-primary full-width" type="submit">Verify & Continue <span aria-hidden="true">→</span></button>
-</form>
-<p class="small muted login-footnote"><a href="{% url 'login' %}">← Return to sign in</a></p></section></div>{% endblock %}
+{% endblock %}

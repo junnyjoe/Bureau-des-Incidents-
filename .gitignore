@@ -13,4 +13,5 @@ htmlcov/
 
 *.sqlite3-*
 media/
+.agents/
 
