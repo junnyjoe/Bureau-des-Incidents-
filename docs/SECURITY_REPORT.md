@@ -3,7 +3,7 @@
 **Project**: Application Security Capstone (Incident Desk)  
 **Target Environment**: Python 3.12/3.13 · Django 5.2.18 · PostgreSQL · Vercel Deployment  
 **Repository Branch**: `master`  
-**Security Status**: All Gates Passing · SAST Clean · SCA Clean · Hardening Verified (55/55 Tests Passing)
+**Security Status**: All Gates Passing · SAST Clean · SCA Clean · Hardening Verified (61/61 Tests Passing)
 
 ---
 
@@ -16,6 +16,7 @@ Incident Desk is a secured multi-role incident management platform designed to p
 - Protection against Mass Assignment attacks on creation and update endpoints.
 - Auto-escaped plain-text operational comments neutralizing Stored Cross-Site Scripting (XSS).
 - Sanitized security audit logging with zero credential leakage.
+- Anti-brute force and credential-stuffing defense with IP-based rate limiting, cooldown lockouts (HTTP 429), and audit logging.
 - Automated CI/CD security pipeline running behavioral tests, SAST (Semgrep), SCA (pip-audit), secret scanning (TruffleHog), and DAST (OWASP ZAP).
 
 ---
@@ -198,11 +199,12 @@ En cas d'anomalie détectée en production sur Vercel :
 ## 7. Bilan des Tests Automatisés
 
 ```text
-Ran 55 tests in 3.23s
+Ran 61 tests in 4.10s
 OK (skipped=5 in isolated test mode; 5/5 passed in security lab mode)
 ```
 - **12 tests** de matrice de rôles et déni d'accès (`test_roles.py`).
 - **7 tests** anti-XSS, CSRF et journalisation d'audit (`test_audit_and_xss.py`).
+- **6 tests** de protection contre la force brute et rate limiting (`test_ratelimit.py`).
 - **6 tests** de cycle de vie et transitions d'états (`IncidentLifecycleAndValidationTests`).
 - **25 tests** de sécurité de base (sessions, CSP, headers no-store, configuration de production).
 - **5 tests** de durcissement contre l'injection SQL (`test_hardening.py`).

@@ -47,14 +47,15 @@ Scoring model based on DREAD/OWASP (Likelihood: Low/Med/High, Impact: Low/Med/Hi
 | **T4** | **Tampering (Stored XSS)** | **Malicious Script Injection in Comments**<br>Attacker injects `<script>` or `<img onerror=...>` in incident comments to execute JavaScript in analyst's browser. | Med | High | Plain-text textarea, strict Django HTML autoescaping in templates, no `|safe` filter, CSP `script-src 'self'`. | `test_comment_stored_xss_payload_stays_inert` | **Mitigated** |
 | **T5** | **Repudiation** | **Untracked Sensitive Actions**<br>Analyst or admin alters status or reassigns incident without forensic accountability. | Med | Med | Centralized `record_audit_event()` logging actor, event type, IP address, and timestamp; password redaction. | `test_audit_event_recorded_on_assignment_and_status` | **Mitigated** |
 | **T6** | **Information Disclosure** | **Credential / Secret Leakage in Source or Logs**<br>Developers commit `.env` or write plaintext passwords/tokens to log files. | Med | Critical | `.env` ignored by Git; Semgrep SAST rule; TruffleHog CI scan; `audit.py` sanitizer stripping secrets. | `test_no_secrets_in_audit_records`, Semgrep (0 findings) | **Mitigated** |
+| **T7** | **Denial of Service / Spoofing** | **Credential Stuffing & Login Brute Force**<br>Attacker executes automated dictionary attack against `/accounts/login/`. | High | High | Server-side IP rate-limiter with 5-attempt threshold, 5-minute lockout (HTTP 429), and security audit logging. | `incidents.tests.test_ratelimit` (6/6 PASS) | **Mitigated** |
 
 ---
 
 ## 4. Residual Risks and Accepted Trade-offs
 
-1. **Denial of Service / Brute Force on Login**:
-   - *Current state*: Django handles authentication safely and rate-limits session lookups, but does not include IP-based progressive backoff without `django-ratelimit` or an upstream reverse proxy (e.g., Cloudflare / Vercel Edge).
-   - *Accepted trade-off*: Handled upstream by Vercel edge protections and infrastructure-level rate limiting.
-2. **Multi-Factor Authentication (MFA)**:
-   - *Current state*: Passwords hashed with PBKDF2/SHA256, but no WebAuthn/TOTP in Version 1.
+1. **Multi-Factor Authentication (MFA)**:
+   - *Current state*: Passwords hashed with PBKDF2/SHA256 and brute-force throttled via `RateLimitedLoginView`, but no WebAuthn/TOTP in Version 1.
    - *Future improvement*: Integration of `django-otp` for analyst and administrator accounts in future cohorts.
+2. **Infrastructure DDoS**:
+   - *Current state*: Application-layer brute-force and request flooding are contained; massive volumetric L3/L4 DDoS attacks are absorbed upstream by Vercel Edge proxies and Anycast network.
+

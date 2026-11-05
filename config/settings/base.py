@@ -60,4 +60,18 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 128 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 128 * 1024
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
+# Cache configuration for session rate-limiting and security counters
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "incident-desk-security-cache",
+    }
+}
+
+# Login rate-limiting thresholds (anti-brute force / credential stuffing)
+LOGIN_RATELIMIT_MAX_ATTEMPTS = 5
+LOGIN_RATELIMIT_LOCKOUT_SECONDS = 300  # 5 minutes
+LOGIN_RATELIMIT_WINDOW_SECONDS = 300   # 5 minutes
+
 TRAINING_MODE = False
+
