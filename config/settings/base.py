@@ -13,6 +13,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "config.middleware.SessionIdleTimeoutMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "config.middleware.ResponsePolicyMiddleware",
@@ -33,6 +34,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", "OPTIONS": {"min_length": 12}},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+    {"NAME": "incidents.validators.ComplexityPasswordValidator"},
 ]
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
@@ -72,6 +74,13 @@ CACHES = {
 LOGIN_RATELIMIT_MAX_ATTEMPTS = 5
 LOGIN_RATELIMIT_LOCKOUT_SECONDS = 300  # 5 minutes
 LOGIN_RATELIMIT_WINDOW_SECONDS = 300   # 5 minutes
+
+# Session inactivity timeout (Session Idle Timeout)
+SESSION_IDLE_TIMEOUT = 1800            # 30 minutes for regular users
+SESSION_IDLE_TIMEOUT_PRIVILEGED = 900  # 15 minutes for analysts and administrators
+
+# Two-factor authentication (TOTP) enforcement
+TWO_FACTOR_ENFORCED = True
 
 TRAINING_MODE = False
 

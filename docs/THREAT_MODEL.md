@@ -48,14 +48,17 @@ Scoring model based on DREAD/OWASP (Likelihood: Low/Med/High, Impact: Low/Med/Hi
 | **T5** | **Repudiation** | **Untracked Sensitive Actions**<br>Analyst or admin alters status or reassigns incident without forensic accountability. | Med | Med | Centralized `record_audit_event()` logging actor, event type, IP address, and timestamp; password redaction. | `test_audit_event_recorded_on_assignment_and_status` | **Mitigated** |
 | **T6** | **Information Disclosure** | **Credential / Secret Leakage in Source or Logs**<br>Developers commit `.env` or write plaintext passwords/tokens to log files. | Med | Critical | `.env` ignored by Git; Semgrep SAST rule; TruffleHog CI scan; `audit.py` sanitizer stripping secrets. | `test_no_secrets_in_audit_records`, Semgrep (0 findings) | **Mitigated** |
 | **T7** | **Denial of Service / Spoofing** | **Credential Stuffing & Login Brute Force**<br>Attacker executes automated dictionary attack against `/accounts/login/`. | High | High | Server-side IP rate-limiter with 5-attempt threshold, 5-minute lockout (HTTP 429), and security audit logging. | `incidents.tests.test_ratelimit` (6/6 PASS) | **Mitigated** |
+| **T8** | **Elevation of Privilege** | **Session Hijacking via Abandoned Terminals**<br>Analyst leaves workstation unattended, allowing unauthorized physical session reuse. | Med | High | Sliding Session Idle Timeout (`SessionIdleTimeoutMiddleware`): 15min for privileged roles, 30min standard, automatic logout and audit trail. | `incidents.tests.test_idle_timeout` (4/4 PASS) | **Mitigated** |
+| **T9** | **Spoofing / Elevation of Privilege** | **Privileged Account Takeover via Stolen Passwords**<br>Attacker obtains analyst or administrator password via phishing or leak. | High | Critical | Mandatory Time-based One-Time Password (TOTP, RFC 6238) Two-Factor Authentication enforced on Analyst and Administrator logins. | `incidents.tests.test_two_factor` (10/10 PASS) | **Mitigated** |
+| **T10** | **Spoofing** | **Weak & Easily Guessable Credentials**<br>Users set simplistic passwords vulnerable to offline cracking or credential guessing. | Med | High | Enterprise `ComplexityPasswordValidator` enforcing minimum length (12+), uppercase, lowercase, numbers, and special symbols. | `incidents.tests.test_password_complexity` (6/6 PASS) | **Mitigated** |
 
 ---
 
 ## 4. Residual Risks and Accepted Trade-offs
 
-1. **Multi-Factor Authentication (MFA)**:
-   - *Current state*: Passwords hashed with PBKDF2/SHA256 and brute-force throttled via `RateLimitedLoginView`, but no WebAuthn/TOTP in Version 1.
-   - *Future improvement*: Integration of `django-otp` for analyst and administrator accounts in future cohorts.
+1. **Hardware Security Keys (WebAuthn / FIDO2)**:
+   - *Current state*: Two-Factor Authentication is fully enforced using RFC 6238 TOTP (authenticator apps). Hardware FIDO2/U2F security keys (YubiKey) are planned for enterprise scale.
 2. **Infrastructure DDoS**:
-   - *Current state*: Application-layer brute-force and request flooding are contained; massive volumetric L3/L4 DDoS attacks are absorbed upstream by Vercel Edge proxies and Anycast network.
+   - *Current state*: Application-layer brute-force, request flooding, and credential stuffing are blocked at the application level; volumetric L3/L4 DDoS attacks are absorbed upstream by Vercel Edge proxies and Anycast network.
+
 

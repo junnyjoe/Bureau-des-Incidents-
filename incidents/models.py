@@ -118,6 +118,8 @@ class AuditEvent(models.Model):
         ASSIGNMENT = "assignment", "Assignment Changed"
         COMMENT_ADDED = "comment_added", "Comment Added"
         INCIDENT_CREATED = "incident_created", "Incident Created"
+        TWO_FACTOR_VERIFIED = "2fa_verified", "2FA Verified"
+        TWO_FACTOR_FAILED = "2fa_failed", "2FA Failed"
 
     action = models.CharField(max_length=40, choices=Action.choices)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
@@ -136,3 +138,28 @@ class AuditEvent(models.Model):
 
     def __str__(self):
         return f"[{self.created_at}] {self.get_action_display()} - User: {self.username_snapshot} - IP: {self.ip_address}"
+
+
+class UserTOTPDevice(models.Model):
+    """
+    Time-based One-Time Password (TOTP, RFC 6238) device for two-factor authentication.
+    Enforces multi-factor authentication for privileged roles (Analysts and Administrators).
+    """
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="totp_device",
+    )
+    secret = models.CharField(max_length=64)
+    is_confirmed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_verified_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "TOTP 2FA Device"
+        verbose_name_plural = "TOTP 2FA Devices"
+
+    def __str__(self):
+        status = "Confirmed" if self.is_confirmed else "Pending"
+        return f"TOTP for {self.user.username} [{status}]"
+
