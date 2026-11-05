@@ -58,8 +58,11 @@ SESSION_SAVE_EVERY_REQUEST = False  # 30-minute lifetime, not a sliding idle tim
 X_FRAME_OPTIONS = "DENY"
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "same-origin"
-DATA_UPLOAD_MAX_MEMORY_SIZE = 128 * 1024
-FILE_UPLOAD_MAX_MEMORY_SIZE = 128 * 1024
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+MAX_UPLOAD_SIZE = 5 * 1024 * 1024  # 5 MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Cache configuration for session rate-limiting and security counters

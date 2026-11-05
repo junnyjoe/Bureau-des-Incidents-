@@ -3,7 +3,7 @@
 **Project**: Application Security Capstone (Incident Desk)  
 **Target Environment**: Python 3.12/3.13 · Django 5.2.18 · PostgreSQL · Vercel Deployment  
 **Repository Branch**: `master`  
-**Security Status**: All Gates Passing · SAST Clean · SCA Clean · Hardening Verified (81/81 Tests Passing)
+**Security Status**: All Gates Passing · SAST Clean · SCA Clean · Hardening Verified (99/99 Tests Passing)
 
 ---
 
@@ -20,6 +20,10 @@ Incident Desk is a secured multi-role incident management platform designed to p
 - Session Idle Timeout terminating inactive sessions (15 minutes for privileged roles, 30 minutes for standard users).
 - Multi-Factor Authentication (MFA / 2FA) using RFC 6238 TOTP enforced for Analysts and Administrators.
 - Enterprise password complexity policy enforcing length, character variety, and symbol diversity.
+- Hardened search & filtering across the incident register with parameterized queries.
+- Dedicated SOC Triage Dashboard with severity KPIs, status distribution, and live security audit activity.
+- Secure CSV and JSON audit exports with Formula / CSV Injection neutralization (CWE-1236).
+- Secure evidence attachments protected against web shells via magic bytes verification, extension denylist, UUID4 storage, and SHA-256 integrity.
 - Automated CI/CD security pipeline running behavioral tests, SAST (Semgrep), SCA (pip-audit), secret scanning (TruffleHog), and DAST (OWASP ZAP).
 
 ---
@@ -202,16 +206,20 @@ En cas d'anomalie détectée en production sur Vercel :
 ## 7. Bilan des Tests Automatisés
 
 ```text
-Ran 81 tests in 9.68s
+Ran 99 tests in 7.43s
 OK (skipped=5 in isolated test mode; 5/5 passed in security lab mode)
 ```
 - **12 tests** de matrice de rôles et déni d'accès (`test_roles.py`).
 - **10 tests** d'authentification multi-facteurs TOTP (`test_two_factor.py`).
 - **7 tests** anti-XSS, CSRF et journalisation d'audit (`test_audit_and_xss.py`).
+- **7 tests** de recherche et filtrage sécurisés (`test_search_and_filters.py`).
 - **6 tests** de protection contre la force brute et rate limiting (`test_ratelimit.py`).
 - **6 tests** de politique de complexité des mots de passe (`test_password_complexity.py`).
 - **6 tests** de cycle de vie et transitions d'états (`IncidentLifecycleAndValidationTests`).
+- **5 tests** de téléversement sécurisé de pièces jointes et magic bytes (`test_attachments.py`).
 - **4 tests** d'expiration de session par inactivité (`test_idle_timeout.py`).
+- **3 tests** d'export CSV/JSON et protection anti-formula injection (`test_export.py`).
+- **3 tests** de métriques et contrôle d'accès du dashboard SOC (`test_soc_dashboard.py`).
 - **25 tests** de sécurité de base (sessions, CSP, headers no-store, configuration de production).
 - **5 tests** de durcissement contre l'injection SQL (`test_hardening.py`).
 

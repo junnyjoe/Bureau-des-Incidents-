@@ -120,6 +120,9 @@ class AuditEvent(models.Model):
         INCIDENT_CREATED = "incident_created", "Incident Created"
         TWO_FACTOR_VERIFIED = "2fa_verified", "2FA Verified"
         TWO_FACTOR_FAILED = "2fa_failed", "2FA Failed"
+        DATA_EXPORTED = "data_exported", "Data Exported"
+        ATTACHMENT_UPLOADED = "attachment_uploaded", "Attachment Uploaded"
+        ATTACHMENT_DOWNLOADED = "attachment_downloaded", "Attachment Downloaded"
 
     action = models.CharField(max_length=40, choices=Action.choices)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
@@ -162,4 +165,48 @@ class UserTOTPDevice(models.Model):
     def __str__(self):
         status = "Confirmed" if self.is_confirmed else "Pending"
         return f"TOTP for {self.user.username} [{status}]"
+
+
+def secure_attachment_path(instance, filename):
+    import os
+    import uuid
+    from django.utils.text import get_valid_filename
+    base = os.path.basename(filename)
+    clean = get_valid_filename(base)
+    ext = os.path.splitext(clean)[1].lower()[:10]
+    unique_name = f"{uuid.uuid4().hex}{ext}"
+    return os.path.join("attachments", f"incident_{instance.incident_id or 'temp'}", unique_name)
+
+
+class IncidentAttachment(models.Model):
+    """
+    Forensic evidence and operational attachment for incidents.
+    Secured against Path Traversal, Web Shells and Unrestricted Uploads.
+    """
+    incident = models.ForeignKey(
+        Incident,
+        on_delete=models.CASCADE,
+        related_name="attachments",
+    )
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="incident_attachments",
+    )
+    original_filename = models.CharField(max_length=255)
+    file = models.FileField(upload_to=secure_attachment_path)
+    content_type = models.CharField(max_length=100)
+    file_size = models.PositiveIntegerField()
+    sha256_hash = models.CharField(max_length=64)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at", "pk"]
+        indexes = [
+            models.Index(fields=["incident", "created_at"], name="attach_inc_created_idx"),
+        ]
+
+    def __str__(self):
+        return f"{self.original_filename} ({self.file_size} bytes) on {self.incident.reference}"
+
 

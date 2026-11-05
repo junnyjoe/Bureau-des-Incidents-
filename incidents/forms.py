@@ -83,3 +83,12 @@ class CommentForm(forms.ModelForm):
         help_texts = {
             "body": "Plain text only (2–2,000 characters). Do not include credentials or personal data.",
         }
+
+
+class AttachmentUploadForm(forms.Form):
+    file = forms.FileField(
+        label="Select evidence file",
+        help_text="Max 5 MB. Allowed formats: .txt, .log, .csv, .json, .pdf, .png, .jpg, .gif, .webp",
+        widget=forms.FileInput(attrs={"class": "form-control"}),
+    )
+
