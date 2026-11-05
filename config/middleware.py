@@ -39,8 +39,10 @@ class SessionIdleTimeoutMiddleware:
                     details=f"Session expired due to inactivity ({int(now - last_activity)}s > {timeout}s)",
                 )
                 auth.logout(request)
-                request.session.flush()
-                messages.info(request, "Your session has expired due to inactivity. Please sign in again.")
+                try:
+                    messages.info(request, "Your session has expired due to inactivity. Please sign in again.")
+                except Exception:
+                    pass
                 return redirect(f"{reverse('login')}?expired=1")
 
             request.session["_last_activity"] = now

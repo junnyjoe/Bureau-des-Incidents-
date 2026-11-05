@@ -18,7 +18,9 @@
     <h2>Sign in</h2>
     <p class="muted">Access your authorized incident workspace.</p>
 
-    {% if lockout_error %}
+    {% if request.GET.expired %}
+    <div class="form-alert" role="alert" style="border-left: 3px solid #d97706; background: #fffbeb; color: #b45309; border-color: #fde68a;">Your session has expired due to inactivity. Please sign in again.</div>
+    {% elif lockout_error %}
     <div class="form-alert" role="alert" style="border-left: 3px solid #b91c1c;">{{ lockout_error }}</div>
     {% elif form.errors %}
     <div class="form-alert" role="alert">We couldn't sign you in. Check your username and password.</div>
