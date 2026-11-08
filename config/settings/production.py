@@ -28,6 +28,16 @@ if any("*" in host for host in ALLOWED_HOSTS):
 CSRF_TRUSTED_ORIGINS = csv("DJANGO_CSRF_TRUSTED_ORIGINS")
 if any(not origin.startswith("https://") or "*" in origin for origin in CSRF_TRUSTED_ORIGINS):
     raise ImproperlyConfigured("Use explicit HTTPS CSRF trusted origins.")
+
+# Automatically include exact Vercel-provided deployment hosts and origins if present
+for env_name in ("VERCEL_URL", "VERCEL_PROJECT_PRODUCTION_URL", "VERCEL_BRANCH_URL"):
+    v_host = os.getenv(env_name, "").strip()
+    if v_host:
+        if v_host not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(v_host)
+        v_origin = f"https://{v_host}"
+        if v_origin not in CSRF_TRUSTED_ORIGINS:
+            CSRF_TRUSTED_ORIGINS.append(v_origin)
 url = required("DATABASE_URL")
 if not url.startswith(("postgres://", "postgresql://")):
     raise ImproperlyConfigured("Production requires PostgreSQL, not a local database file.")
