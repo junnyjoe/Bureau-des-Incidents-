@@ -1,51 +1,73 @@
 {% extends 'base.html' %}
-{% block title %}New incident · Incident Desk{% endblock %}
+{% block title %}Nouveau rapport d'incident · Incident Desk{% endblock %}
 {% block content %}
-<a class="back-link" href="{% url 'incidents:list' %}">← Incident register</a>
+<div style="margin-bottom: 20px;">
+  <a class="button-quiet" href="{% url 'incidents:list' %}" style="font-size: 12px;">
+    ← Retour au registre des incidents
+  </a>
+</div>
 
 <div class="section-heading">
   <div>
-    <p class="eyebrow">CREATE A REPORT</p>
-    <h1>New incident<span class="heading-dot">.</span></h1>
-    <p class="muted">Document factual observations, affected assets, and estimated impact.</p>
+    <p class="eyebrow">DÉCLARATION D'INCIDENT</p>
+    <h1>Déclarer un nouvel incident</h1>
+    <p class="muted">Documentez précisément les faits constatés, les actifs impactés et l'estimation de gravité.</p>
   </div>
 </div>
 
-<div class="form-layout">
-  <section class="card form-card">
-    <form method="post">
-      {% csrf_token %}
-      {% if form.errors %}
-      <div class="form-alert" role="alert">Please correct the highlighted fields below.</div>
-      {% endif %}
-      {{ form.non_field_errors }}
-
-      {% for field in form %}
-      <div class="field-group">
-        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-        {{ field }}
-        {% if field.help_text %}
-        <p class="help-text">{{ field.help_text }}</p>
+<div class="detail-layout">
+  <div class="detail-main">
+    <section class="card" style="padding: 28px;">
+      <form method="post">
+        {% csrf_token %}
+        {% if form.errors %}
+        <div class="messages" role="alert" style="margin-bottom: 20px;">
+          <p style="background: #fef2f2; border-color: #fecaca; color: #b91c1c;">
+            Veuillez corriger les champs signalés ci-dessous.
+          </p>
+        </div>
         {% endif %}
-        {% if field.errors %}
-        <div class="field-errors" role="alert">{{ field.errors }}</div>
-        {% endif %}
-      </div>
-      {% endfor %}
+        {{ form.non_field_errors }}
 
-      <div class="form-actions">
-        <button class="button-primary" type="submit">Create incident <span aria-hidden="true">→</span></button>
-        <a class="button-quiet" href="{% url 'incidents:list' %}">Cancel</a>
-      </div>
-    </form>
-  </section>
+        {% for field in form %}
+        <div style="margin-bottom: 22px;">
+          <label for="{{ field.id_for_label }}" style="display: block; font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 6px;">
+            {{ field.label }}
+          </label>
+          {{ field }}
+          {% if field.help_text %}
+          <p class="small muted" style="margin: 6px 0 0;">{{ field.help_text }}</p>
+          {% endif %}
+          {% if field.errors %}
+          <div style="color: #dc2626; font-size: 12px; margin-top: 4px;">{{ field.errors }}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
 
-  <aside class="guidance">
-    <span class="guide-line"></span>
-    <h2>Reporting Guidelines</h2>
-    <p>Describe precisely what happened, the systems affected, and timestamps if known.</p>
-    <p><strong>Sanitization notice:</strong> Do not include unredacted credentials, API keys, or private customer records.</p>
-    <p class="small muted" style="margin-top: 16px; border-top: 1px solid var(--border-subtle); padding-top: 12px;">Your user account will be stamped as the author and owner automatically.</p>
-  </aside>
+        <div style="display: flex; gap: 12px; align-items: center; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border-subtle);">
+          <button class="button-primary" type="submit" style="padding: 9px 18px;">
+            <span>Enregistrer le rapport</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </button>
+          <a class="button-quiet" href="{% url 'incidents:list' %}">Annuler</a>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <div class="detail-sidebar">
+    <div class="card sidebar-box" style="background: #fcfdfe;">
+      <div class="sidebar-title">Recommandations de saisie</div>
+      <p style="font-size: 13px; color: var(--ink-secondary); line-height: 1.6; margin-bottom: 12px;">
+        Indiquez factuellement les systèmes touchés, les symptômes observés ainsi que les horodatages exacts si disponibles.
+      </p>
+      <div style="font-size: 12px; color: #b45309; background: #fffbeb; border: 1px solid #fde68a; padding: 10px 12px; border-radius: 6px; margin-bottom: 16px;">
+        <strong>Sécurité :</strong> Ne collez jamais de mots de passe, clés secrètes ou données personnelles brutes.
+      </div>
+      <p class="small muted" style="border-top: 1px solid var(--border-subtle); padding-top: 12px; margin: 0;">
+        Votre identifiant sera automatiquement associé à ce rapport en tant que déclarant.
+      </p>
+    </div>
+  </div>
 </div>
 {% endblock %}

@@ -1,29 +1,30 @@
 {% extends 'base.html' %}
-{% block title %}Sign in · Incident Desk{% endblock %}
+{% block title %}Connexion · Incident Desk{% endblock %}
 {% block content %}
-<div class="login-layout">
-  <section class="login-intro">
-    <p class="eyebrow">APPLICATION SECURITY PLATFORM</p>
-    <h1>Incident response,<br>simplified and secured<span class="heading-dot">.</span></h1>
-    <p class="lead">A centralized, hardened console to record security events, track triage progress, and enforce strict role-based access control.</p>
-
-    <div class="intro-note">
-      <span class="note-number">01 /</span>
-      <p>Hardened authentication: IP-based rate limiting, session idle termination, and two-factor authentication for privileged accounts.</p>
+<div class="login-wrapper">
+  <div class="card login-card">
+    <div style="text-align: center; margin-bottom: 24px;">
+      <div class="brand-mark" style="width: 44px; height: 44px; margin: 0 auto 12px; font-size: 18px; border-radius: 10px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+        </svg>
+      </div>
+      <h1 style="font-size: 22px; margin-bottom: 4px;">Incident Desk</h1>
+      <p class="muted" style="font-size: 13px;">Portail d'authentification sécurisé</p>
     </div>
-  </section>
-
-  <section class="card login-card">
-    <p class="eyebrow">OPERATIONAL CONSOLE</p>
-    <h2>Sign in</h2>
-    <p class="muted">Access your authorized incident workspace.</p>
 
     {% if request.GET.expired %}
-    <div class="form-alert" role="alert" style="border-left: 3px solid #d97706; background: #fffbeb; color: #b45309; border-color: #fde68a;">Your session has expired due to inactivity. Please sign in again.</div>
+    <div style="background: #fffbeb; border: 1px solid #fde68a; color: #b45309; padding: 10px 14px; border-radius: 6px; font-size: 13px; margin-bottom: 18px;">
+      Votre session a expiré suite à une période d'inactivité. Veuillez vous reconnecter.
+    </div>
     {% elif lockout_error %}
-    <div class="form-alert" role="alert" style="border-left: 3px solid #b91c1c;">{{ lockout_error }}</div>
+    <div style="background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 10px 14px; border-radius: 6px; font-size: 13px; margin-bottom: 18px;">
+      {{ lockout_error }}
+    </div>
     {% elif form.errors %}
-    <div class="form-alert" role="alert">We couldn't sign you in. Check your username and password.</div>
+    <div style="background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 10px 14px; border-radius: 6px; font-size: 13px; margin-bottom: 18px;">
+      Identifiant ou mot de passe incorrect. Check your username and password.
+    </div>
     {% endif %}
 
     <form method="post">
@@ -31,19 +32,35 @@
       <input type="hidden" name="next" value="{{ next }}">
 
       <div style="margin-bottom: 16px;">
-        <label for="id_username">Username</label>
-        <input type="text" name="username" id="id_username" autocomplete="username" maxlength="150" autofocus required value="{{ form.username.value|default:'' }}" placeholder="e.g. analyst_charlie">
+        <label for="id_username" style="display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-muted); margin-bottom: 6px;">
+          Nom d'utilisateur
+        </label>
+        <input type="text" name="username" id="id_username" autocomplete="username" maxlength="150" autofocus required value="{{ form.username.value|default:'' }}" placeholder="ex. Junnydev">
       </div>
 
       <div style="margin-bottom: 22px;">
-        <label for="id_password">Password</label>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <label for="id_password" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-muted);">
+            Mot de passe
+          </label>
+        </div>
         <input type="password" name="password" id="id_password" autocomplete="current-password" required placeholder="••••••••••••">
       </div>
 
-      <button class="button-primary full-width" type="submit" style="padding: 11px;">Sign in <span aria-hidden="true">→</span></button>
+      <button class="button-primary" type="submit" style="width: 100%; justify-content: center; padding: 10px; font-size: 14px;">
+        <span>Se connecter</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </button>
     </form>
 
-    <p class="small muted login-footnote">Restricted system. Access is monitored and logged in compliance with audit policy.</p>
-  </section>
+    <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border-subtle); text-align: center;">
+      <span class="small muted" style="font-size: 11px;">
+        Accès restreint aux personnes autorisées · Audit IP & Rate Limiting actif
+      </span>
+    </div>
+  </div>
 </div>
 {% endblock %}

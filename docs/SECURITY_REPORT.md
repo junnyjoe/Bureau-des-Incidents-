@@ -2,8 +2,8 @@
 
 **Project**: Application Security Capstone (Incident Desk)  
 **Target Environment**: Python 3.12/3.13 · Django 5.2.18 · PostgreSQL · Vercel Deployment  
-**Repository Branch**: `master`  
-**Security Status**: All Gates Passing · SAST Clean · SCA Clean · Hardening Verified (99/99 Tests Passing)
+**Repository Branch**: `main`  
+**Security Status**: All Gates Passing · SAST Clean · SCA Clean · Hardening Verified (103/103 Tests Passing)
 
 ---
 
@@ -206,7 +206,7 @@ En cas d'anomalie détectée en production sur Vercel :
 ## 7. Bilan des Tests Automatisés
 
 ```text
-Ran 99 tests in 7.43s
+Ran 103 tests in 3.96s
 OK (skipped=5 in isolated test mode; 5/5 passed in security lab mode)
 ```
 - **12 tests** de matrice de rôles et déni d'accès (`test_roles.py`).
@@ -217,6 +217,7 @@ OK (skipped=5 in isolated test mode; 5/5 passed in security lab mode)
 - **6 tests** de politique de complexité des mots de passe (`test_password_complexity.py`).
 - **6 tests** de cycle de vie et transitions d'états (`IncidentLifecycleAndValidationTests`).
 - **5 tests** de téléversement sécurisé de pièces jointes et magic bytes (`test_attachments.py`).
+- **4 tests** d'administration et attribution de rôles sécurisés (`test_admin_roles.py`).
 - **4 tests** d'expiration de session par inactivité (`test_idle_timeout.py`).
 - **3 tests** d'export CSV/JSON et protection anti-formula injection (`test_export.py`).
 - **3 tests** de métriques et contrôle d'accès du dashboard SOC (`test_soc_dashboard.py`).

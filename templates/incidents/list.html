@@ -1,80 +1,102 @@
-{% extends 'base.html' %}{% block title %}My incidents · Incident Desk{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Registre des incidents · Incident Desk{% endblock %}
 {% block content %}
 <div class="section-heading">
   <div>
-    <p class="eyebrow">YOUR WORKSPACE</p>
-    <h1>Incident Register<span class="heading-dot">.</span></h1>
-    <p class="muted">Role-scoped view of security events, lifecycle triage, and operational assignments.</p>
+    <p class="eyebrow">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+      </svg>
+      ESPACE DE TRAVAIL
+    </p>
+    <h1>Registre des incidents</h1>
+    <p class="muted">Vue opérationnelle des événements de sécurité selon votre rôle autorisé.</p>
   </div>
   <div style="display:flex; gap:10px; align-items:center;">
-    <a class="button-quiet" href="{% url 'incidents:export_csv' %}">📥 Export CSV</a>
-    <a class="button-quiet" href="{% url 'incidents:export_json' %}">📄 Export JSON</a>
-    <a class="button-primary" href="{% url 'incidents:create' %}"><span aria-hidden="true">+</span> New incident</a>
+    <a class="button-quiet" href="{% url 'incidents:export_csv' %}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      CSV
+    </a>
+    <a class="button-quiet" href="{% url 'incidents:export_json' %}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+      JSON
+    </a>
+    <a class="button-primary" href="{% url 'incidents:create' %}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      <span>Nouvel incident</span>
+    </a>
   </div>
-</div>
-
-<div class="summary-strip">
-  <div>
-    <span class="summary-number">{{ paginator.count|stringformat:'02d' }}</span>
-    <span class="summary-label">MATCHES</span>
-  </div>
-  <p>Only incidents within your authorized role scope appear here.<br><span class="muted">Parameterized ORM queries eliminate SQL injection risks.</span></p>
 </div>
 
 <!-- Search and Filter Bar -->
-<section class="card" style="margin-bottom: 24px; padding: 18px 20px;">
-  <form method="get" action="{% url 'incidents:list' %}" style="display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end;">
-    <div style="flex: 2; min-width: 240px;">
-      <label for="id_q">Search keyword / Ref</label>
-      <input type="text" name="q" id="id_q" value="{{ search_q }}" placeholder="e.g. laptop, network or INC-0001">
+<section class="card filter-card">
+  <form method="get" action="{% url 'incidents:list' %}" class="filter-form">
+    <div class="field-wrap" style="flex: 2; min-width: 240px;">
+      <label for="id_q">Recherche par mot-clé / Réf</label>
+      <input type="text" name="q" id="id_q" value="{{ search_q }}" placeholder="ex. force brute, phishing, INC-0001...">
     </div>
 
-    <div style="flex: 1; min-width: 140px;">
-      <label for="id_status">Status</label>
+    <div class="field-wrap" style="flex: 1; min-width: 140px;">
+      <label for="id_status">Statut</label>
       <select name="status" id="id_status">
-        <option value="">All statuses</option>
+        <option value="">Tous les statuts</option>
         {% for val, label in status_choices %}
         <option value="{{ val }}" {% if filter_status == val %}selected{% endif %}>{{ label }}</option>
         {% endfor %}
       </select>
     </div>
 
-    <div style="flex: 1; min-width: 140px;">
-      <label for="id_severity">Severity</label>
+    <div class="field-wrap" style="flex: 1; min-width: 140px;">
+      <label for="id_severity">Sévérité</label>
       <select name="severity" id="id_severity">
-        <option value="">All severities</option>
+        <option value="">Toutes les sévérités</option>
         {% for val, label in severity_choices %}
         <option value="{{ val }}" {% if filter_severity == val %}selected{% endif %}>{{ label }}</option>
         {% endfor %}
       </select>
     </div>
 
-    <div style="display: flex; gap: 8px; align-items: center;">
-      <button class="button-primary" type="submit">Filter</button>
-      {% if search_q or filter_status or filter_severity or filter_date_from or filter_date_to %}
-      <a href="{% url 'incidents:list' %}" class="button-quiet">Clear</a>
+    <div style="display: flex; gap: 8px; align-items: center; padding-bottom: 2px;">
+      <button class="button-primary" type="submit">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        Filtrer
+      </button>
+      {% if search_q or filter_status or filter_severity %}
+      <a href="{% url 'incidents:list' %}" class="button-quiet">Effacer</a>
       {% endif %}
     </div>
   </form>
 </section>
 
+<!-- Incident Register Panel -->
 <section class="card incident-panel">
   <div class="panel-heading">
-    <h2>Incident register</h2>
-    <span class="small muted">{% if search_q or filter_status or filter_severity %}Filtered results{% else %}Most recent first{% endif %}</span>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <h2>Liste des incidents</h2>
+      <span class="badge" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;">
+        {{ paginator.count }} enregistrement{{ paginator.count|pluralize }}
+      </span>
+    </div>
+    <span class="small muted">
+      {% if search_q or filter_status or filter_severity %}Résultats filtrés{% else %}Du plus récent au plus ancien{% endif %}
+    </span>
   </div>
+
   {% if incidents %}
   <div class="table-scroll">
     <table>
       <thead>
         <tr>
-          <th scope="col">Reference</th>
+          <th scope="col">Réf</th>
           <th scope="col">Incident</th>
-          <th scope="col">Status</th>
-          <th scope="col">Severity</th>
-          <th scope="col">Assigned</th>
-          <th scope="col">Reported</th>
-          <th scope="col"><span class="sr-only">Open incident</span></th>
+          <th scope="col">Statut</th>
+          <th scope="col">Sévérité</th>
+          <th scope="col">Assigné à</th>
+          <th scope="col">Date de signalement</th>
+          <th scope="col"><span class="sr-only">Détails</span></th>
         </tr>
       </thead>
       <tbody>
@@ -83,13 +105,36 @@
           <td><span class="reference">{{ incident.reference }}</span></td>
           <td>
             <a class="incident-link" href="{% url 'incidents:detail' incident.pk %}">{{ incident.title }}</a>
-            <p class="row-description">{{ incident.description|truncatechars:90 }}</p>
+            <p class="row-description">{{ incident.description|truncatechars:100 }}</p>
           </td>
-          <td><span class="badge badge-status badge-{{ incident.status }}">{{ incident.get_status_display }}</span></td>
-          <td><span class="badge badge-severity badge-{{ incident.severity }}">{{ incident.get_severity_display }}</span></td>
-          <td class="small">{% if incident.assigned_to %}{{ incident.assigned_to.username }}{% else %}<span class="muted">—</span>{% endif %}</td>
-          <td class="date-cell">{{ incident.created_at|date:'M j, Y' }}<span>{{ incident.created_at|date:'H:i' }} UTC</span></td>
-          <td><a class="row-arrow" href="{% url 'incidents:detail' incident.pk %}" aria-label="Open {{ incident.reference }}">↗</a></td>
+          <td>
+            <span class="badge badge-{{ incident.status }}">
+              <span class="badge-dot"></span>
+              {{ incident.get_status_display }}
+            </span>
+          </td>
+          <td>
+            <span class="badge badge-{{ incident.severity }}">
+              <span class="badge-dot"></span>
+              {{ incident.get_severity_display }}
+            </span>
+          </td>
+          <td>
+            {% if incident.assigned_to %}
+            <span class="user-pill">
+              <span class="avatar-initials">{{ incident.assigned_to.username|slice:":2"|upper }}</span>
+              <span>{{ incident.assigned_to.username }}</span>
+            </span>
+            {% else %}
+            <span class="muted">—</span>
+            {% endif %}
+          </td>
+          <td class="date-cell">{{ incident.created_at|date:'d/m/Y' }}<span>{{ incident.created_at|date:'H:i' }} UTC</span></td>
+          <td>
+            <a class="button-quiet" style="padding: 4px 8px; font-size: 11px;" href="{% url 'incidents:detail' incident.pk %}">
+              Ouvrir →
+            </a>
+          </td>
         </tr>
         {% endfor %}
       </tbody>
@@ -97,23 +142,32 @@
   </div>
   {% else %}
   <div class="empty-state">
-    <span class="empty-symbol" aria-hidden="true">🔍</span>
-    <h3>No matching incidents found.</h3>
-    <p>Try refining your search terms or clearing active filters.</p>
-    <a class="text-link" href="{% url 'incidents:list' %}">Reset all filters →</a>
+    <div class="empty-icon-wrap">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+    </div>
+    <h3>Aucun incident ne correspond à votre recherche</h3>
+    <p>Modifiez vos critères de recherche ou réinitialisez les filtres pour afficher l'ensemble des dossiers.</p>
+    <a class="button-quiet" href="{% url 'incidents:list' %}">Réinitialiser tous les filtres</a>
   </div>
   {% endif %}
 
   {% if is_paginated %}
-  <nav class="pagination" aria-label="Incident pages">
-    {% if page_obj.has_previous %}
-    <a href="?page={{ page_obj.previous_page_number }}{% if querystring %}&{{ querystring }}{% endif %}">← Previous</a>
-    {% endif %}
-    <span>Page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
-    {% if page_obj.has_next %}
-    <a href="?page={{ page_obj.next_page_number }}{% if querystring %}&{{ querystring }}{% endif %}">Next →</a>
-    {% endif %}
-  </nav>
+  <div style="padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); font-size: 13px;">
+    <div>
+      {% if page_obj.has_previous %}
+      <a class="button-quiet" href="?page={{ page_obj.previous_page_number }}{% if querystring %}&{{ querystring }}{% endif %}">← Précédent</a>
+      {% endif %}
+    </div>
+    <span class="small muted">Page {{ page_obj.number }} sur {{ paginator.num_pages }}</span>
+    <div>
+      {% if page_obj.has_next %}
+      <a class="button-quiet" href="?page={{ page_obj.next_page_number }}{% if querystring %}&{{ querystring }}{% endif %}">Suivant →</a>
+      {% endif %}
+    </div>
+  </div>
   {% endif %}
 </section>
 {% endblock %}

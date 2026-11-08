@@ -1,139 +1,190 @@
-{% extends 'base.html' %}{% block title %}SOC Dashboard · Incident Desk{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Tableau de bord SOC · Incident Desk{% endblock %}
 {% block content %}
 <div class="section-heading">
   <div>
-    <p class="eyebrow">SECURITY OPERATIONS CENTER</p>
-    <h1>SOC Triage Dashboard<span class="heading-dot">.</span></h1>
-    <p class="muted">Operational analytics, severity metrics, and real-time security audit events.</p>
+    <p class="eyebrow">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polygon points="12 6 12 12 16 14"></polygon>
+      </svg>
+      CENTRE DES OPÉRATIONS DE SÉCURITÉ (SOC)
+    </p>
+    <h1>SOC Triage Dashboard · Tableau de bord</h1>
+    <p class="muted">Surveillance opérationnelle, analyse des sévérités et traçabilité en temps réel.</p>
   </div>
   <div style="display:flex; gap:10px; align-items:center;">
-    <a class="button-quiet" href="{% url 'incidents:export_csv' %}">📥 Export CSV</a>
-    <a class="button-primary" href="{% url 'incidents:list' %}">Incident Register →</a>
+    <a class="button-quiet" href="{% url 'incidents:export_csv' %}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+      </svg>
+      Exporter CSV
+    </a>
+    <a class="button-primary" href="{% url 'incidents:list' %}">
+      <span>Registre des incidents</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+        <polyline points="12 5 19 12 12 19"></polyline>
+      </svg>
+    </a>
   </div>
 </div>
 
-<!-- SOC Key Metrics Grid -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 28px;">
-  <div class="card" style="padding: 20px 22px; border-top: 3px solid #0284c7;">
-    <p class="eyebrow" style="margin-bottom: 8px;">ALL INCIDENTS</p>
-    <div style="font-size: 2.2rem; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums;">{{ total_incidents|stringformat:'02d' }}</div>
-    <span class="small muted">Within authorized role scope</span>
+<!-- 5 KPI Cards Grid -->
+<div class="kpi-grid">
+  <div class="card kpi-card" style="border-top-color: #2563eb;">
+    <div class="kpi-card-header">
+      <span class="eyebrow" style="color: #2563eb; margin: 0;">TOTAL INCIDENTS</span>
+      <span class="kpi-icon" style="background: #eff6ff; color: #2563eb;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      </span>
+    </div>
+    <div class="kpi-value" style="color: var(--ink);">{{ total_incidents|stringformat:'02d' }}</div>
+    <span class="kpi-subtitle">Dans votre périmètre autorisé</span>
   </div>
 
-  <div class="card" style="padding: 20px 22px; border-top: 3px solid #eab308;">
-    <p class="eyebrow" style="margin-bottom: 8px; color: #ca8a04;">ACTIVE TRIAGE</p>
-    <div style="font-size: 2.2rem; font-weight: 700; color: #a16207; font-variant-numeric: tabular-nums;">{{ active_incidents|stringformat:'02d' }}</div>
-    <span class="small muted">Open & In Progress</span>
+  <div class="card kpi-card" style="border-top-color: #f59e0b;">
+    <div class="kpi-card-header">
+      <span class="eyebrow" style="color: #d97706; margin: 0;">TRIAGE ACTIF</span>
+      <span class="kpi-icon" style="background: #fffbeb; color: #d97706;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+      </span>
+    </div>
+    <div class="kpi-value" style="color: #b45309;">{{ active_incidents|stringformat:'02d' }}</div>
+    <span class="kpi-subtitle">Statuts Ouvert et En cours</span>
   </div>
 
-  <div class="card" style="padding: 20px 22px; border-top: 3px solid #ef4444;">
-    <p class="eyebrow" style="margin-bottom: 8px; color: #dc2626;">CRITICAL SEVERITY</p>
-    <div style="font-size: 2.2rem; font-weight: 700; color: #991b1b; font-variant-numeric: tabular-nums;">{{ critical_count|stringformat:'02d' }}</div>
-    <span class="small muted">Immediate response needed</span>
+  <div class="card kpi-card" style="border-top-color: #ef4444;">
+    <div class="kpi-card-header">
+      <span class="eyebrow" style="color: #dc2626; margin: 0;">GRAVITÉ CRITIQUE</span>
+      <span class="kpi-icon" style="background: #fef2f2; color: #dc2626;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      </span>
+    </div>
+    <div class="kpi-value" style="color: #b91c1c;">{{ critical_count|stringformat:'02d' }}</div>
+    <span class="kpi-subtitle">Intervention prioritaire requise</span>
   </div>
 
-  <div class="card" style="padding: 20px 22px; border-top: 3px solid #f97316;">
-    <p class="eyebrow" style="margin-bottom: 8px; color: #ea580c;">HIGH SEVERITY</p>
-    <div style="font-size: 2.2rem; font-weight: 700; color: #c2410c; font-variant-numeric: tabular-nums;">{{ high_count|stringformat:'02d' }}</div>
-    <span class="small muted">Priority analysis queue</span>
+  <div class="card kpi-card" style="border-top-color: #f97316;">
+    <div class="kpi-card-header">
+      <span class="eyebrow" style="color: #ea580c; margin: 0;">SÉVÉRITÉ ÉLEVÉE</span>
+      <span class="kpi-icon" style="background: #fff7ed; color: #ea580c;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+      </span>
+    </div>
+    <div class="kpi-value" style="color: #c2410c;">{{ high_count|stringformat:'02d' }}</div>
+    <span class="kpi-subtitle">File d'analyse prioritaire</span>
   </div>
 
-  <div class="card" style="padding: 20px 22px; border-top: 3px solid #64748b;">
-    <p class="eyebrow" style="margin-bottom: 8px; color: #475569;">UNASSIGNED QUEUE</p>
-    <div style="font-size: 2.2rem; font-weight: 700; color: #334155; font-variant-numeric: tabular-nums;">{{ unassigned_count|stringformat:'02d' }}</div>
-    <span class="small muted">Awaiting analyst dispatch</span>
+  <div class="card kpi-card" style="border-top-color: #64748b;">
+    <div class="kpi-card-header">
+      <span class="eyebrow" style="color: #475569; margin: 0;">NON ASSIGNÉS</span>
+      <span class="kpi-icon" style="background: #f1f5f9; color: #475569;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+      </span>
+    </div>
+    <div class="kpi-value" style="color: #334155;">{{ unassigned_count|stringformat:'02d' }}</div>
+    <span class="kpi-subtitle">En attente d'analyste</span>
   </div>
 </div>
 
-<!-- Two-Column Analytics Layout -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 28px;">
+<!-- Two-Column Analytics -->
+<div class="analytics-grid">
   <!-- Severity Breakdown -->
   <section class="card" style="padding: 22px 24px;">
-    <h2>Incidents by Severity</h2>
-    <div style="margin-top: 18px; display: flex; flex-direction: column; gap: 14px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2>Répartition par sévérité</h2>
+      <span class="small muted">Niveaux d'impact</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 16px;">
       <div>
         <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
-          <span><span class="badge badge-severity badge-critical">Critical</span></span>
+          <span class="badge badge-critical"><span class="badge-dot"></span>Critique</span>
           <strong style="font-variant-numeric: tabular-nums;">{{ critical_count }}</strong>
         </div>
-        <div style="background: var(--bg-subtle); height: 7px; border-radius: 4px; overflow: hidden; border: 1px solid var(--border-subtle);">
-          <div style="background: #ef4444; height: 100%; width: {% if total_incidents %}{% widthratio critical_count total_incidents 100 %}{% else %}0{% endif %}%;"></div>
+        <div class="progress-track">
+          <div class="progress-fill" style="background: #ef4444; width: {% if total_incidents %}{% widthratio critical_count total_incidents 100 %}{% else %}0{% endif %}%;"></div>
         </div>
       </div>
 
       <div>
         <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
-          <span><span class="badge badge-severity badge-high">High</span></span>
+          <span class="badge badge-high"><span class="badge-dot"></span>Élevée</span>
           <strong style="font-variant-numeric: tabular-nums;">{{ high_count }}</strong>
         </div>
-        <div style="background: var(--bg-subtle); height: 7px; border-radius: 4px; overflow: hidden; border: 1px solid var(--border-subtle);">
-          <div style="background: #f97316; height: 100%; width: {% if total_incidents %}{% widthratio high_count total_incidents 100 %}{% else %}0{% endif %}%;"></div>
+        <div class="progress-track">
+          <div class="progress-fill" style="background: #f97316; width: {% if total_incidents %}{% widthratio high_count total_incidents 100 %}{% else %}0{% endif %}%;"></div>
         </div>
       </div>
 
       <div>
         <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
-          <span><span class="badge badge-severity badge-medium">Medium</span></span>
+          <span class="badge badge-medium"><span class="badge-dot"></span>Moyenne</span>
           <strong style="font-variant-numeric: tabular-nums;">{{ medium_count }}</strong>
         </div>
-        <div style="background: var(--bg-subtle); height: 7px; border-radius: 4px; overflow: hidden; border: 1px solid var(--border-subtle);">
-          <div style="background: #eab308; height: 100%; width: {% if total_incidents %}{% widthratio medium_count total_incidents 100 %}{% else %}0{% endif %}%;"></div>
+        <div class="progress-track">
+          <div class="progress-fill" style="background: #eab308; width: {% if total_incidents %}{% widthratio medium_count total_incidents 100 %}{% else %}0{% endif %}%;"></div>
         </div>
       </div>
 
       <div>
         <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
-          <span><span class="badge badge-severity badge-low">Low</span></span>
+          <span class="badge badge-low"><span class="badge-dot"></span>Faible</span>
           <strong style="font-variant-numeric: tabular-nums;">{{ low_count }}</strong>
         </div>
-        <div style="background: var(--bg-subtle); height: 7px; border-radius: 4px; overflow: hidden; border: 1px solid var(--border-subtle);">
-          <div style="background: #10b981; height: 100%; width: {% if total_incidents %}{% widthratio low_count total_incidents 100 %}{% else %}0{% endif %}%;"></div>
+        <div class="progress-track">
+          <div class="progress-fill" style="background: #22c55e; width: {% if total_incidents %}{% widthratio low_count total_incidents 100 %}{% else %}0{% endif %}%;"></div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Status Distribution -->
+  <!-- Status Lifecycle Distribution -->
   <section class="card" style="padding: 22px 24px;">
-    <h2>Lifecycle Status Distribution</h2>
-    <div style="margin-top: 18px; display: flex; flex-direction: column; gap: 14px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2>Cycle de vie des incidents</h2>
+      <span class="small muted">Flux de traitement</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 16px;">
       <div>
         <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
-          <span><span class="badge badge-status badge-open">Open</span></span>
+          <span class="badge badge-open"><span class="badge-dot"></span>Ouvert (Triage initial)</span>
           <strong style="font-variant-numeric: tabular-nums;">{{ open_count }}</strong>
         </div>
-        <div style="background: var(--bg-subtle); height: 7px; border-radius: 4px; overflow: hidden; border: 1px solid var(--border-subtle);">
-          <div style="background: #0284c7; height: 100%; width: {% if total_incidents %}{% widthratio open_count total_incidents 100 %}{% else %}0{% endif %}%;"></div>
+        <div class="progress-track">
+          <div class="progress-fill" style="background: #2563eb; width: {% if total_incidents %}{% widthratio open_count total_incidents 100 %}{% else %}0{% endif %}%;"></div>
         </div>
       </div>
 
       <div>
         <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
-          <span><span class="badge badge-status badge-in_progress">In Progress</span></span>
+          <span class="badge badge-in_progress"><span class="badge-dot"></span>En cours d'investigation</span>
           <strong style="font-variant-numeric: tabular-nums;">{{ in_progress_count }}</strong>
         </div>
-        <div style="background: var(--bg-subtle); height: 7px; border-radius: 4px; overflow: hidden; border: 1px solid var(--border-subtle);">
-          <div style="background: #6366f1; height: 100%; width: {% if total_incidents %}{% widthratio in_progress_count total_incidents 100 %}{% else %}0{% endif %}%;"></div>
+        <div class="progress-track">
+          <div class="progress-fill" style="background: #f59e0b; width: {% if total_incidents %}{% widthratio in_progress_count total_incidents 100 %}{% else %}0{% endif %}%;"></div>
         </div>
       </div>
 
       <div>
         <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
-          <span><span class="badge badge-status badge-resolved">Resolved</span></span>
+          <span class="badge badge-resolved"><span class="badge-dot"></span>Résolu</span>
           <strong style="font-variant-numeric: tabular-nums;">{{ resolved_count }}</strong>
         </div>
-        <div style="background: var(--bg-subtle); height: 7px; border-radius: 4px; overflow: hidden; border: 1px solid var(--border-subtle);">
-          <div style="background: #10b981; height: 100%; width: {% if total_incidents %}{% widthratio resolved_count total_incidents 100 %}{% else %}0{% endif %}%;"></div>
+        <div class="progress-track">
+          <div class="progress-fill" style="background: #10b981; width: {% if total_incidents %}{% widthratio resolved_count total_incidents 100 %}{% else %}0{% endif %}%;"></div>
         </div>
       </div>
 
       <div>
         <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
-          <span><span class="badge badge-status badge-closed">Closed</span></span>
+          <span class="badge badge-closed"><span class="badge-dot"></span>Clôturé</span>
           <strong style="font-variant-numeric: tabular-nums;">{{ closed_count }}</strong>
         </div>
-        <div style="background: var(--bg-subtle); height: 7px; border-radius: 4px; overflow: hidden; border: 1px solid var(--border-subtle);">
-          <div style="background: #94a3b8; height: 100%; width: {% if total_incidents %}{% widthratio closed_count total_incidents 100 %}{% else %}0{% endif %}%;"></div>
+        <div class="progress-track">
+          <div class="progress-fill" style="background: #94a3b8; width: {% if total_incidents %}{% widthratio closed_count total_incidents 100 %}{% else %}0{% endif %}%;"></div>
         </div>
       </div>
     </div>
@@ -143,20 +194,20 @@
 <!-- Recent Incidents Table -->
 <section class="card incident-panel" style="margin-bottom: 28px;">
   <div class="panel-heading">
-    <h2>Recent Incidents</h2>
-    <a class="text-link" href="{% url 'incidents:list' %}" style="font-size: 12px;">View all register →</a>
+    <h2>Incidents récents</h2>
+    <a class="button-quiet" href="{% url 'incidents:list' %}" style="font-size: 12px;">Voir tout le registre →</a>
   </div>
   {% if recent_incidents %}
   <div class="table-scroll">
     <table>
       <thead>
         <tr>
-          <th>Ref</th>
-          <th>Incident Title</th>
-          <th>Severity</th>
-          <th>Status</th>
-          <th>Assigned</th>
-          <th>Reported</th>
+          <th>Référence</th>
+          <th>Titre de l'incident</th>
+          <th>Sévérité</th>
+          <th>Statut</th>
+          <th>Assigné à</th>
+          <th>Déclaré le</th>
         </tr>
       </thead>
       <tbody>
@@ -164,46 +215,59 @@
         <tr>
           <td><span class="reference">{{ inc.reference }}</span></td>
           <td><a class="incident-link" href="{% url 'incidents:detail' inc.pk %}">{{ inc.title }}</a></td>
-          <td><span class="badge badge-severity badge-{{ inc.severity }}">{{ inc.get_severity_display }}</span></td>
-          <td><span class="badge badge-status badge-{{ inc.status }}">{{ inc.get_status_display }}</span></td>
-          <td class="small">{% if inc.assigned_to %}{{ inc.assigned_to.username }}{% else %}<span class="muted">—</span>{% endif %}</td>
-          <td class="date-cell">{{ inc.created_at|date:'M j, H:i' }} UTC</td>
+          <td><span class="badge badge-{{ inc.severity }}"><span class="badge-dot"></span>{{ inc.get_severity_display }}</span></td>
+          <td><span class="badge badge-{{ inc.status }}"><span class="badge-dot"></span>{{ inc.get_status_display }}</span></td>
+          <td>
+            {% if inc.assigned_to %}
+            <span class="user-pill">
+              <span class="avatar-initials">{{ inc.assigned_to.username|slice:":2"|upper }}</span>
+              <span>{{ inc.assigned_to.username }}</span>
+            </span>
+            {% else %}
+            <span class="muted">—</span>
+            {% endif %}
+          </td>
+          <td class="date-cell">{{ inc.created_at|date:'d/m/Y' }}<span>{{ inc.created_at|date:'H:i' }} UTC</span></td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
   {% else %}
-  <p class="muted" style="padding: 24px;">No incidents recorded yet.</p>
+  <div class="empty-state">
+    <div class="empty-icon-wrap">🛡️</div>
+    <h3>Aucun incident enregistré</h3>
+    <p>Le périmètre de sécurité est dégagé ou aucun rapport n'a encore été soumis.</p>
+  </div>
   {% endif %}
 </section>
 
-<!-- Recent Security Audit Trail -->
+<!-- Security Audit Log -->
 {% if recent_audit %}
 <section class="card incident-panel">
   <div class="panel-heading">
-    <h2>Security Audit Activity Log</h2>
-    <span class="small muted">Forensic traceability</span>
+    <h2>Journal d'audit de sécurité</h2>
+    <span class="small muted">Traçabilité légale & forensique</span>
   </div>
   <div class="table-scroll">
     <table>
       <thead>
         <tr>
           <th>Action</th>
-          <th>Actor</th>
-          <th>IP Address</th>
-          <th>Details</th>
-          <th>Timestamp</th>
+          <th>Auteur</th>
+          <th>Adresse IP</th>
+          <th>Détails de l'événement</th>
+          <th>Horodatage</th>
         </tr>
       </thead>
       <tbody>
         {% for ev in recent_audit %}
         <tr>
           <td><span class="badge" style="background:var(--bg-subtle); border: 1px solid var(--border-subtle); color: var(--ink-secondary); font-size:11px;">{{ ev.get_action_display }}</span></td>
-          <td style="font-weight: 500;">{{ ev.username_snapshot }}</td>
-          <td style="font-family: ui-monospace, monospace; font-size: 11px; color: var(--ink-muted);">{{ ev.ip_address|default:'—' }}</td>
+          <td style="font-weight: 600;">{{ ev.username_snapshot }}</td>
+          <td style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-muted);">{{ ev.ip_address|default:'—' }}</td>
           <td style="font-size: 12px; color: var(--ink-secondary); max-width: 360px; word-break: break-word;">{{ ev.details }}</td>
-          <td class="date-cell">{{ ev.created_at|date:'M j, H:i:s' }}</td>
+          <td class="date-cell">{{ ev.created_at|date:'d/m/Y' }}<span>{{ ev.created_at|date:'H:i:s' }}</span></td>
         </tr>
         {% endfor %}
       </tbody>
